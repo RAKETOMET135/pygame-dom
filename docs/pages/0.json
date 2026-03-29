@@ -1,0 +1,52 @@
+{
+    "header": "Intro",
+    "content": [
+        {
+            "type": "text",
+            "text": "RUI is a UI framework for creating user interface inside of a pygame application. RUI converts HTML and CSS files into user interface with the support of event handling."
+        },
+        {
+            "type": "code",
+            "lang": "python",
+            "filename": "app.py",
+            "code": [
+                "<span class='import'>from</span> <span class='class'>rui</span> <span class='import'>import</span> <span class='class'>RUI</span>, <span class='class'>UIPage</span>, <span class='class'>UIEvent</span>",
+                "<span class='import'>import</span> <span class='class'>pygame<span>",
+                "",
+                "<span class='func'>@</span><span class='class'>RUI</span><span class='func'>.register<span><span class='paren'>()</span>",
+                "<span class='keyw'>def</span> <span class='func'>on_button_click</span><span class='paren'>(</span><span class='param'>event</span>: <span class='class'>UIEvent</span><span class='paren'>)</span> -> <span class='val'>None</span>:",
+                "\t<span class='func'>print</span><span class='paren'>(</span><span class='str'>\"click\"</span><span class='paren'>)</span>",
+                "",
+                "<span class='keyw'>def</span> <span class='func'>main</span><span class='paren'>()</span> -> <span class='val'>None</span>:",
+                "\t<span class='class'>pygame</span>.<span class='func'>init</span><span class='paren'>()</span>",
+                "",
+                "\tscreen: <span class='class'>pygame</span>.<span class='class'>Surface</span> = <span class='class'>pygame</span>.<span class='class'>display</span>.<span class='func'>set_mode</span><span class='paren'>((</span><span class='num'>800</span>, <span class='num'>600</span><span class='paren'>))</span>",
+                "\tclock: <span class='class'>pygame</span>.<span class='class'>time</span>.<span class='class'>Clock</span> = <span class='class'>pygame</span>.<span class='class'>time</span>.<span class='class'>Clock</span><span class='paren'>()</span>",
+                "\trunning: <span class='class'>bool</span> = <span class='val'>True</span>",
+                "",
+                "\tpage: <span class='class'>UIPage</span> = <span class='class'>RUI</span>.<span class='func'>create_ui_page</span><span class='paren'>(</span><span class='str'>\"ui.html\"</span><span class='paren'>)</span>",
+                "\tpage.<span class='func'>style</span><span class='paren'>(</span><span class='str'>\"ui.css\"</span><span class='paren'>)</span>",
+                "",
+                "\t<span class='import'>while</span> running:",
+                "\t\tevents: <span class='class'>list</span><span class='paren'>[</span><span class='class'>pygame</span>.<span class='class'>event</span>.<span class='class'>Event</span><span class='paren'>]</span> = <span class='class'>pygame</span>.<span class='class'>event</span>.<span class='func'>get</span><span class='paren'>()</span>",
+                "",
+                "\t\t<span class='import'>for</span> event <span class='import'>in</span> events:",
+                "\t\t\t<span class='import'>if</span> event.type == <span class='class'>pygame</span>.QUIT:",
+                "\t\t\t\trunning = <span class='val'>False</span>",
+                "",
+                "\t\tscreen.<span class='func'>fill</span><span class='paren'>(</span><span class='str'>\"black\"</span><span class='paren'>)</span>",
+                "",
+                "\t\tpage.<span class='func'>render</span><span class='paren'>(</span>screen, events<span class='paren'>)</span>",
+                "",
+                "\t\t<span class='class'>pygame</span>.<span class='class'>display</span>.<span class='func'>flip</span><span class='paren'>()</span>",
+                "",
+                "\t\tclock.<span class='func'>tick</span><span class='paren'>(</span><span class='num'>120</span><span class='paren'>)</span>",
+                "",
+                "\t<span class='class'>pygame</span>.<span class='func'>quit</span><span class='paren'>()</span>",
+                "",
+                "<span class='import'>if</span> __name__ == <span class='str'>\"__main__\"</span>:",
+                "\t<span class='class'>main</span><span class='func'>()</span>"
+            ]
+        }
+    ]
+}
