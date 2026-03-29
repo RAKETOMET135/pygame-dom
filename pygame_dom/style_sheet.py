@@ -1,0 +1,637 @@
+from __future__ import annotations
+from importlib import resources
+from pygame_dom.data.named_colors import CSS_NAMED_COLORS
+import pygame
+import math
+
+class StyleRule:
+    def __init__(self, name: str, value: str) -> StyleRule:
+        self.name = name
+        self.value = value
+    
+    def __str__(self) -> str:
+        return f"StyleRule(name: {self.name}, value: {self.value})"
+
+class TagStyle:
+    def __init__(self, selector: str, style_rules: list[StyleRule]) -> TagStyle:
+        self.selector = selector
+        self.style_rules = style_rules
+
+class ClassStyle:
+    def __init__(self, style_class: str, style_rules: list[StyleRule]) -> ClassStyle:
+        self.style_class = style_class
+        self.style_rules = style_rules
+
+class IdStyle:
+    def __init__(self, style_id: str, style_rules: list[StyleRule]) -> IdStyle:
+        self.style_id = style_id
+        self.style_rules = style_rules
+
+class StyleSheet:
+    def __init__(self, css_file_path: str) -> StyleSheet:
+        self.default_style = []
+        self.global_style = []
+        self.tag_styles = []
+        self.class_styles = []
+        self.id_styles = []
+
+        is_file_loaded: bool = False
+        css_content: str = ""
+
+        try:
+            with open(css_file_path, "r") as file:
+                css_content = file.read()
+                is_file_loaded = True
+        except:
+            print(f"Could not open CSS file on path: {css_file_path}")
+        
+        if not is_file_loaded:
+            return
+        
+        self.__load_default_css()
+
+        css_content = self.__polish_css_string(css_content)
+
+        self.parser(css_content)
+
+    def __load_default_css(self) -> None:
+        try:
+            with resources.open_text("pygame_dom", "default.css") as file:
+                css_content: str = file.read()
+                css_content = self.__polish_css_string(css_content)
+
+                self.parser(css_content, is_default=True)
+        except:
+            pass
+
+    def get_style_rule(self, style_rules: list[StyleRule], style_rule: StyleRule) -> StyleRule | None:
+        for sr in style_rules:
+            if not sr.name == style_rule.name:
+                continue
+
+            return sr
+        
+        return None
+
+    def get_tag_style(self, tag_selector: str) -> TagStyle | None:
+        for tag_style in self.tag_styles:
+            if not tag_style.selector == tag_selector:
+                continue
+
+            return tag_style
+        
+        return None
+
+    def get_default_tag_style(self, tag_selector: str) -> TagStyle | None:
+        for tag_style in self.default_style:
+            if not tag_style.selector == tag_selector:
+                continue
+
+            return tag_style
+        
+        return None
+
+    def get_class_style(self, class_selector: str) -> ClassStyle | None:
+        class_selector = class_selector[1:]
+
+        for class_style in self.class_styles:
+            if not class_style.style_class == class_selector:
+                continue
+
+            return class_style
+        
+        return None
+    
+    def get_id_style(self, id_selector: str) -> IdStyle | None:
+        id_selector = id_selector[1:]
+
+        for id_style in self.id_styles:
+            if not id_style.style_id == id_selector:
+                continue
+
+            return id_style
+        
+        return None
+
+    def parse_root_selector(self, content: list[StyleRule]) -> None:
+        for style_rule in content:
+            sr: StyleRule | None = self.get_style_rule(self.global_style, style_rule)
+
+            if not sr:
+                self.global_style.append(style_rule)
+            else:
+                sr.value = style_rule.value
+
+    def parse_tag_selector(self, selector: str, content: list[StyleRule]) -> None:
+        tag_style: TagStyle | None = self.get_tag_style(selector)
+
+        if not tag_style:
+            self.tag_styles.append(TagStyle(selector, content))
+        else:
+            for style_rule in content:
+                sr: StyleRule | None = self.get_style_rule(tag_style.style_rules, style_rule)
+
+                if not sr:
+                    tag_style.style_rules.append(style_rule)
+                else:
+                    sr.value = style_rule.value
+
+    def parse_default_tag_selector(self, selector: str, content: list[StyleRule]) -> None:
+        tag_style: TagStyle | None = self.get_default_tag_style(selector)
+
+        if not tag_style:
+            self.default_style.append(TagStyle(selector, content))
+        else:
+            for style_rule in content:
+                sr: StyleRule | None = self.get_style_rule(tag_style.style_rules, style_rule)
+
+                if not sr:
+                    tag_style.style_rules.append(style_rule)
+                else:
+                    sr.value = style_rule.value
+
+    def parse_class_selector(self, selector: str, content: list[StyleRule]) -> None:
+        class_style: ClassStyle | None = self.get_class_style(selector)
+
+        if not class_style:
+            self.class_styles.append(ClassStyle(selector[1:], content))
+        else:
+            for style_rule in content:
+                sr: StyleRule | None = self.get_style_rule(class_style.style_rules, style_rule)
+
+                if not sr:
+                    class_style.style_rules.append(style_rule)
+                else:
+                    sr.value = style_rule.value
+
+    def parse_id_selector(self, selector: str, content: list[StyleRule]) -> None:
+        id_style: IdStyle | None = self.get_id_style(selector)
+
+        if not id_style:
+            self.id_styles.append(IdStyle(selector[1:], content))
+        else:
+            for style_rule in content:
+                sr: StyleRule | None = self.get_style_rule(id_style.style_rules, style_rule)
+
+                if not sr:
+                    id_style.style_rules.append(style_rule)
+                else:
+                    sr.value = style_rule.value
+
+    def handle_parsed_selector(self, selector: str, content: list[StyleRule], is_default: bool = False) -> None:
+        if is_default and (selector[0] == "." or selector[0] == "#"):
+            return
+
+        if selector == "*":
+            self.parse_root_selector(content)
+        elif selector[0] == ".":
+            self.parse_class_selector(selector, content)
+        elif selector[0] == "#":
+            self.parse_id_selector(selector, content)
+        else:
+            if is_default:
+                self.parse_default_tag_selector(selector, content)
+
+                return
+
+            self.parse_tag_selector(selector, content)
+
+    def parser(self, css_string: str, is_default: bool = False) -> None:
+        parsed_selector: str = ""
+        is_in_selector: bool = False
+
+        property_name: str = ""
+        property_value: str = ""
+        content: list[StyleRule] = []
+        is_in_property_value: bool = False
+
+        for i in range(len(css_string)):
+            letter: str = css_string[i]
+
+            if is_in_selector:
+                if letter == "}":
+                    is_in_selector = False
+
+                    if len(property_value) > 0:
+                        content.append(StyleRule(property_name, property_value))
+
+                        property_name = ""
+                        property_value = ""
+
+                    self.handle_parsed_selector(parsed_selector, content, is_default=is_default)
+
+                    parsed_selector = ""
+                    content = []
+
+                    continue
+                
+                if is_in_property_value:
+                    if letter == ";":
+                        is_in_property_value = False
+
+                        content.append(StyleRule(property_name, property_value))
+
+                        property_name = ""
+                        property_value = ""
+
+                        continue
+
+                    property_value += letter
+
+                    continue
+
+                if letter == ":":
+                    is_in_property_value = True
+
+                    continue
+
+                property_name += letter
+
+                continue
+
+            if letter == "{":
+                is_in_selector = True
+
+                continue
+
+            parsed_selector += letter
+
+    
+    def __polish_css_string(self, css_string: str) -> str:
+        polished_css_string: str = ""
+
+        css_string = css_string.replace("\n", "")
+        css_string = css_string.replace("\t", "")
+        css_string = css_string.replace("\r", "")
+
+        for i in range(len(css_string)):
+            letter: str = css_string[i]
+
+            if letter == " ":
+                continue
+
+            polished_css_string += letter
+
+        return polished_css_string
+    
+    def apply_style_rule(self, style: dict, style_rule: StyleRule) -> None:
+        match style_rule.name:
+            case "color":
+                style["color"] = self.get_pygame_color(style_rule.value)
+            case "font-family":
+                style["font-family"] = self.get_pygame_font(style_rule.value)
+            case "font-size":
+                style["font-size"] = self.get_pygame_font_size(style_rule.value)
+            case "font-weight":
+                style["font-weight"] = self.get_pygame_font_weight(style_rule.value)
+            case "font-style":
+                style["font-style"] = self.get_pygame_font_style(style_rule.value)
+            case "background-color":
+                style["background-color"] = self.get_pygame_color(style_rule.value)
+            case "padding-top":
+                style["padding-top"] = self.get_pygame_onevalue_size(style_rule.value)
+            case "padding-right":
+                style["padding-right"] = self.get_pygame_onevalue_size(style_rule.value)
+            case "padding-bottom":
+                style["padding-bottom"] = self.get_pygame_onevalue_size(style_rule.value)
+            case "padding-left":
+                style["padding-left"] = self.get_pygame_onevalue_size(style_rule.value)
+            case "padding":
+                padding: list[int] = self.get_pygame_padding(style_rule.value)
+
+                style["padding-top"] = padding[0]
+                style["padding-right"] = padding[1]
+                style["padding-bottom"] = padding[2]
+                style["padding-left"] = padding[3]
+            case "margin-top":
+                style["margin-top"] = self.get_pygame_onevalue_size(style_rule.value)
+            case "margin-right":
+                style["margin-right"] = self.get_pygame_onevalue_size(style_rule.value)
+            case "margin-bottom":
+                style["margin-bottom"] = self.get_pygame_onevalue_size(style_rule.value)
+            case "margin-left":
+                style["margin-left"] = self.get_pygame_onevalue_size(style_rule.value)
+            case "margin":
+                margin: list[int] = self.get_pygame_padding(style_rule.value)
+
+                style["margin-top"] = margin[0]
+                style["margin-right"] = margin[1]
+                style["margin-bottom"] = margin[2]
+                style["margin-left"] = margin[3]
+            case "border-top-left-radius":
+                style["border-top-left-radius"] = self.get_pygame_onevalue_size(style_rule.value)
+            case "border-top-right-radius":
+                style["border-top-right-radius"] = self.get_pygame_onevalue_size(style_rule.value)
+            case "border-bottom-left-radius":
+                style["border-bottom-left-radius"] = self.get_pygame_onevalue_size(style_rule.value)
+            case "border-bottom-right-radius":
+                style["border-bottom-right-radius"] = self.get_pygame_onevalue_size(style_rule.value)
+            case "border-radius":
+                radius: list[int] = self.get_pygame_border_radius(style_rule.value)
+
+                style["border-top-left-radius"] = radius[0]
+                style["border-top-right-radius"] = radius[1]
+                style["border-bottom-left-radius"] = radius[2]
+                style["border-bottom-right-radius"] = radius[3]
+            case "position":
+                style["position"] = self.get_pygame_position(style_rule.value)
+            case "left":
+                style["left"] = self.get_pygame_onevalue_size(style_rule.value)
+                style["right"] = -1
+            case "top":
+                style["top"] = self.get_pygame_onevalue_size(style_rule.value)
+                style["bottom"] = -1
+            case "right":
+                style["right"] = self.get_pygame_onevalue_size(style_rule.value)
+                style["left"] = -1
+            case "bottom":
+                style["bottom"] = self.get_pygame_onevalue_size(style_rule.value)
+                style["top"] = -1
+            case "width":
+                style["width"] = self.get_pygame_onevalue_size(style_rule.value)
+            case "height":
+                style["height"] = self.get_pygame_onevalue_size(style_rule.value)
+            case "display":
+                style["display"] = self.get_pygame_display(style_rule.value)
+            case "align-items":
+                style["align-items"] = self.get_pygame_align_items(style_rule.value)
+
+    def get_style(self, _type: str, classes: list[str], _id: str) -> dict:
+        style: dict = {
+            "color": (0, 0, 0, 0),
+            "font-family": "timesnewroman",
+            "font-size": 0,
+            "font-weight": 400,
+            "font-style": "normal",
+            "background-color": (0, 0, 0, 0),
+            "padding-top": 0,
+            "padding-right": 0,
+            "padding-bottom": 0,
+            "padding-left": 0,
+            "margin-top": 0,
+            "margin-right": 0,
+            "margin-bottom": 0,
+            "margin-left": 0,
+            "border-top-left-radius": 0,
+            "border-top-right-radius": 0,
+            "border-bottom-left-radius": 0,
+            "border-bottom-right-radius": 0,
+            "border-color": (0, 0, 0, 0),
+            "border-width": 0,
+            "position": "static",
+            "left": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0,
+            "width": 0,
+            "height": 0,
+            "display": "block",
+            "align-items": "stretch"
+        }
+
+        for tag_style in self.default_style:
+            if not tag_style.selector == _type:
+                continue
+
+            for style_rule in tag_style.style_rules:
+                self.apply_style_rule(style, style_rule)
+
+            break
+
+        for style_rule in self.global_style:
+            self.apply_style_rule(style, style_rule)
+        
+        for tag_style in self.tag_styles:
+            if not tag_style.selector == _type:
+                continue
+            
+            for style_rule in tag_style.style_rules:
+                self.apply_style_rule(style, style_rule)
+
+            break
+
+        for class_style in self.class_styles:
+            if not class_style.style_class in classes:
+                continue
+
+            for style_rule in class_style.style_rules:
+                self.apply_style_rule(style, style_rule)
+
+        for id_style in self.id_styles:
+            if not id_style.style_id == _id:
+                continue
+
+            for style_rule in id_style.style_rules:
+                self.apply_style_rule(style, style_rule)
+
+            break
+
+        return style
+
+    def __unit_split(self, string: str) -> list[str]:
+        final: list[str] = []
+
+        builded_word: str = ""
+        for letter in string:
+            if letter.isdigit():
+                if len(builded_word) > 0 and builded_word[len(builded_word) - 1].isalpha():
+                    final.append(builded_word)
+
+                    builded_word = ""
+            
+            builded_word += letter
+        
+        if len(builded_word) > 0:
+            final.append(builded_word)
+
+        return final
+
+    def get_pygame_align_items(self, align_items: str):
+        if align_items == "stretch" or align_items == "end" or align_items == "start" or align_items == "center":
+            return align_items
+        
+        if align_items == "flex-end":
+            return "end"
+        
+        if align_items == "flex-start":
+            return "start"
+        
+        return "stretch"
+
+    def get_pygame_display(self, display: str) -> str:
+        if display == "inline" or display == "block" or display == "flex":
+            return display
+        
+        return "block"
+
+    def get_pygame_position(self, position: str) -> str:
+        if position == "absolute" or position == "relative":
+            return position
+        
+        return "static"
+
+    def get_pygame_border_radius(self, border_radius: str) -> tuple[int, int, int, int]:
+        border_radiuses: list[str] = self.__unit_split(border_radius)
+
+        if len(border_radiuses) == 1:
+            radius: int = self.get_pygame_onevalue_size(border_radiuses[0])
+
+            return (radius, radius, radius, radius)
+        elif len(border_radiuses) == 2:
+            tlbr: int = self.get_pygame_onevalue_size(border_radiuses[0])
+            trbl: int = self.get_pygame_onevalue_size(border_radiuses[1])
+
+            return (tlbr, trbl, trbl, tlbr)
+        elif len(border_radiuses) == 3:
+            tl: int = self.get_pygame_onevalue_size(border_radiuses[0])
+            trbl: int = self.get_pygame_onevalue_size(border_radiuses[1])
+            br: int = self.get_pygame_onevalue_size(border_radiuses[2])
+
+            return (tl, trbl, trbl, br)
+        elif len(border_radiuses) == 4:
+            tl: int = self.get_pygame_onevalue_size(border_radiuses[0])
+            tr: int = self.get_pygame_onevalue_size(border_radiuses[1])
+            br: int = self.get_pygame_onevalue_size(border_radiuses[2])
+            bl: int = self.get_pygame_onevalue_size(border_radiuses[3])
+
+            return (tl, tr, bl, br)
+
+        return (0, 0, 0, 0)
+
+    def get_pygame_padding(self, padding: str) -> tuple[int, int, int, int]:
+        paddings: list[str] = self.__unit_split(padding)
+
+        if len(paddings) == 1:
+            padding: int = self.get_pygame_onevalue_size(paddings[0])
+
+            return (padding, padding, padding, padding)
+        elif len(paddings) == 2:
+            padding_vertical: int = self.get_pygame_onevalue_size(paddings[0])
+            padding_horizontal: int = self.get_pygame_onevalue_size(paddings[1])
+
+            return (padding_vertical, padding_horizontal, padding_vertical, padding_horizontal)
+        elif len(paddings) == 3:
+            padding_top: int = self.get_pygame_onevalue_size(paddings[0])
+            padding_horizontal: int = self.get_pygame_onevalue_size(paddings[1])
+            padding_bottom: int = self.get_pygame_onevalue_size(paddings[2])
+
+            return (padding_top, padding_horizontal, padding_bottom, padding_horizontal)
+        elif len(paddings) == 4:
+            padding_top: int = self.get_pygame_onevalue_size(paddings[0])
+            padding_right: int = self.get_pygame_onevalue_size(paddings[1])
+            padding_bottom: int = self.get_pygame_onevalue_size(paddings[2])
+            padding_left: int = self.get_pygame_onevalue_size(paddings[3])
+
+            return (padding_top, padding_right, padding_bottom, padding_left)
+        
+        return (0, 0, 0, 0)
+
+    def get_pygame_onevalue_size(self, size: str) -> int:
+        if size == "0":
+            return 0
+
+        if size.endswith("px"):
+            return int(size[:len(size) - 2])
+
+        return size
+
+    def get_pygame_font_style(self, style: str) -> str:
+        if style == "italic" or style == "normal":
+            return style
+        
+        if style == "oblique":
+            return "italic"
+        
+        return "normal"
+
+    def get_pygame_font_weight(self, weight: str) -> int:
+        if weight == "bold" or weight == "bolder":
+            return 700
+
+        if weight == "normal" or weight == "lighter":
+            return 400
+        
+        try:
+            weight_number: int = int(weight)
+
+            weight_number = math.floor(weight_number / 100) * 100
+
+            if weight_number < 100 or weight_number > 900:
+                return 400
+            
+            return weight_number
+        except:
+            return 400
+
+    def get_pygame_font_size(self, size: str) -> int:
+        if size.endswith("px"):
+            return int(size[:len(size) - 2])
+
+        return size
+
+    def get_pygame_font(self, css_font: str) -> str:
+        css_font: str = css_font.strip().lower()
+
+        if css_font[0] == '"':
+            css_font = css_font[1:len(css_font) - 1]
+
+        if css_font in pygame.sysfont.get_fonts():
+            return css_font
+        
+        return "timesnewroman"
+
+    def get_pygame_color(self, css_color: str) -> tuple[int, int, int] | tuple[int, int, int, int]:
+        css_color: str = css_color.strip().lower()
+
+        if css_color in CSS_NAMED_COLORS:
+            return CSS_NAMED_COLORS[css_color]
+
+        if css_color.startswith("rgb") and not css_color.startswith("rgba"):
+            rgb_color: str = css_color[4:len(css_color) - 1]
+            
+            rgb: list[str] = rgb_color.split(",")
+
+            if len(rgb) < 2:
+                return (0, 0, 0)
+
+            return (int(rgb[0]), int(rgb[1]), int(rgb[2]))
+
+        if css_color.startswith("rgba"):
+            rgba_color: str = css_color[5:len(css_color) - 1]
+
+            rgba: list[str] = rgba_color.split(",")
+
+            if len(rgba) < 3:
+                return (0, 0, 0, 0)
+
+            return (int(rgba[0]), int(rgba[1]), int(rgba[2]), int(float(rgba[3]) * 100))
+
+        if css_color.startswith("#"):
+            hex_value: str = css_color[1:]
+
+            if len(hex_value) == 3:
+                r: int = int(hex_value[0] * 2, 16)
+                g: int = int(hex_value[1] * 2, 16)
+                b: int = int(hex_value[2] * 2, 16)
+
+                return (r, g, b)
+            elif len(hex_value) == 4:
+                r: int = int(hex_value[0]*2, 16)
+                g: int = int(hex_value[1]*2, 16)
+                b: int = int(hex_value[2]*2, 16)
+                a: int = int(hex_value[3]*2, 16)
+
+                return (r, g, b, a)
+            elif len(hex_value) == 6:
+                r: int = int(hex_value[0:2], 16)
+                g: int = int(hex_value[2:4], 16)
+                b: int = int(hex_value[4:6], 16)
+
+                return (r, g, b)
+            elif len(hex_value) == 8:
+                r: int = int(hex_value[0:2], 16)
+                g: int = int(hex_value[2:4], 16)
+                b: int = int(hex_value[4:6], 16)
+                a: int = int(hex_value[6:8], 16)
+
+                return (r, g, b, a)
