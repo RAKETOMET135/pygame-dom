@@ -193,6 +193,7 @@ class UIPage:
         mouse_position: tuple[int, int] = pygame.mouse.get_pos()
 
         created_events: list[str] = []
+        created_event_attrs: list = []
         handled_events: list[UIEvent] = []
 
         affected_elements: list[UIElement] = []
@@ -204,37 +205,77 @@ class UIPage:
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN:    
                 created_events.append("pointerdown")    
+                created_event_attrs.append({"button": event.button})
+
                 created_events.append("mousedown")
+                created_event_attrs.append({"button": event.button})
 
                 btn_down = True
                 btn = event.button
 
                 if btn == 1:
                     created_events.append("leftmousedown")
+                    created_event_attrs.append({"button": 1})
                 elif btn == 3:
                     created_events.append("rightmousedown")
+                    created_event_attrs.append({"button": 3})
+            
             elif event.type == pygame.MOUSEMOTION:
                 created_events.append("mouseenter")
+                created_event_attrs.append(None)
+
                 created_events.append("mouseleave")
+                created_event_attrs.append(None)
+
                 created_events.append("pointerenter")
+                created_event_attrs.append(None)
+
                 created_events.append("pointerleave")
+                created_event_attrs.append(None)
+
                 created_events.append("mousemove")
+                created_event_attrs.append(None)
+
                 created_events.append("pointermove")
+                created_event_attrs.append(None)
             elif event.type == pygame.MOUSEBUTTONUP:
                 created_events.append("pointerup")
+                created_event_attrs.append({"button": event.button})
+
                 created_events.append("mouseup")
-                created_events.append("click")
+                created_event_attrs.append({"button": event.button})
+
+                if not event.button in [2, 4, 5, 6, 7]:
+                    created_events.append("click")
+                    created_event_attrs.append({"button": event.button})
+
                 created_events.append("dblclick")
+                created_event_attrs.append({"button": event.button})
 
                 btn_up = True
                 btn = event.button
 
                 if btn == 1:
                     created_events.append("leftclick")
+                    created_event_attrs.append({"button": 1})
+
                     created_events.append("leftmouseup")
+                    created_event_attrs.append({"button": 1})
                 elif btn == 3:
                     created_events.append("rightclick")
+                    created_event_attrs.append({"button": 3})
+
                     created_events.append("rightmouseup")
+                    created_event_attrs.append({"button": 3})
+            elif event.type == pygame.KEYDOWN:
+                created_events.append("keydown")
+                created_event_attrs.append({"key": event.key})
+            elif event.type == pygame.KEYUP:
+                created_events.append("keyup")
+                created_event_attrs.append({"key": event.key})
+            elif event.type == pygame.MOUSEWHEEL:
+                created_events.append("mousewheel")
+                created_event_attrs.append({"delta_x": event.x, "delta_y": event.y})
 
         for instance in self.instances:
             instance.latest_render_zindex = -1
@@ -282,7 +323,11 @@ class UIPage:
         if root_event_element:
             click_delay: int = pygame.time.get_ticks() - root_event_element.last_click_time
 
+            i: int = -1
+
             for created_event in created_events:
+                i += 1
+
                 if (created_event == "mouseenter" or created_event == "pointerenter") and not root_event_element.is_mouse_enter:
                     continue
 
@@ -302,6 +347,14 @@ class UIPage:
                     continue
 
                 current_event = UIEvent(created_event, root_event_element)
+
+                event_attrs: dict | None = created_event_attrs[i]
+
+                if event_attrs:
+                    current_event.key = event_attrs.get("key")
+                    current_event.button = event_attrs.get("button")
+                    current_event.delta_x = event_attrs.get("delta_x")
+                    current_event.delta_y = event_attrs.get("delta_y")
 
                 handled_events.append(current_event)
 

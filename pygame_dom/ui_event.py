@@ -6,6 +6,11 @@ class UIEvent:
         self.event_type = event_type
         self.event_root = event_root
 
+        self.key = None
+        self.button = None
+        self.delta_x = None
+        self.delta_y = None
+
         self.propagation = True
     
     def stop_propagation(self) -> None:
