@@ -33,10 +33,14 @@ class UIStateInstance:
 class UIStateParser:
     def __init__(self) -> UIStateParser:
         self.states = []
+        self.attr_states = []
 
     def render_all_states(self) -> None:
         for state in self.states:
             self.render_state(state)
+        
+        for attr_state in self.attr_states:
+            self.render_attr_state(attr_state)
 
     def on_state_created_by_user(self, state_name: str) -> None:
         for state in self.states:
@@ -52,6 +56,20 @@ class UIStateParser:
 
             if has_state:
                 self.render_state(state)
+        
+        for attr_state in self.attr_states:
+            has_state: bool = False
+
+            for ui_state_instance in attr_state[1]:
+                if not ui_state_instance.name == state_name:
+                    continue
+
+                has_state = True
+
+                break
+
+            if has_state:
+                self.render_attr_state(attr_state)
 
     def render_state(self, state: list) -> None:
         ui_element: UIElement = state[0]
@@ -90,6 +108,48 @@ class UIStateParser:
             new_text += letter
 
         ui_element.set_text(new_text)
+    
+    def render_attr_state(self, state: list) -> None:
+        ui_element: UIElement = state[0]
+        ui_state_instances: list[UIStateInstance] = state[1]
+        ui_text: str = state[2]
+        ui_attr_name: str = state[3]
+
+        i: int = 0
+
+        new_text: str = ""
+
+        is_state: bool = False
+
+        for letter in ui_text:
+            if letter == "{":
+                is_state = True
+
+                ui_state_instance: UIStateInstance = ui_state_instances[i]
+
+                state_value: Any = get_state(ui_state_instance.name)
+
+                if state_value:
+                    new_text += str(state_value.value)
+
+                i += 1
+
+                continue
+            
+            if letter == "}":
+                is_state = False
+
+                continue
+
+            if is_state:
+                continue
+            
+            new_text += letter
+
+        ui_element.attrs[ui_attr_name] = new_text
+
+        if ui_attr_name == "src" and ui_element.element and hasattr(ui_element.element, "set_image_path"):
+            ui_element.element.set_image_path(new_text)
 
     def parse_text(self, text: str, ui_element: UIElement) -> None:
         element_states: list[UIStateInstance] = []
@@ -133,3 +193,46 @@ class UIStateParser:
             c_state_name += letter
 
         self.states.append((ui_element, element_states, text))
+    
+    def parse_attr(self, text: str, ui_element: UIElement, attr: str) -> None:
+        element_states: list[UIStateInstance] = []
+
+        is_state: bool = False
+
+        c_state_start: int = -1
+        c_state_end: int = -1
+        c_state_name: str = ""
+
+        i: int = -1
+
+        for letter in text:
+            i += 1
+
+            if letter == "{":
+                is_state = True
+
+                c_state_start = i
+
+                continue
+            
+            if not is_state:
+                continue
+
+            if letter == "}":
+                is_state = False
+
+                c_state_end = i
+
+                state: UIStateInstance = UIStateInstance(c_state_start, c_state_end, c_state_name)
+
+                element_states.append(state)
+
+                c_state_start = -1
+                c_state_end = -1
+                c_state_name = ""
+
+                continue
+
+            c_state_name += letter
+
+        self.attr_states.append((ui_element, element_states, text, attr))

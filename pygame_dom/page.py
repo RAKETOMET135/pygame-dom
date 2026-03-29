@@ -102,6 +102,9 @@ class UIPage:
         ui_element.set_id(element.get("id") or "")
         ui_element.attrs = element.attrs
 
+        for attr, value in ui_element.attrs.items():
+            self.state_parser.parse_attr(value, ui_element, attr)
+
         self.state_parser.parse_text(element_text, ui_element)
 
         if parent:

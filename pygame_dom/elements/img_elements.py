@@ -15,6 +15,14 @@ class ImageElement:
         self._width = -1
         self._height = -1
     
+    def set_image_path(self, path: str) -> None:
+        if self.path == path:
+            return
+        
+        self.path = path
+        self.width = -1
+        self.height = -1
+
     def get_height(self) -> int:
         if not self.rect:
             return 0
@@ -59,7 +67,12 @@ class ImageElement:
         return self.style
     
     def __get_init_size(self) -> tuple[int, int]:
-        init_image: pygame.Surface = pygame.image.load(self.path)
+        init_image: pygame.Surface
+
+        try:
+            init_image = pygame.image.load(self.path)
+        except:
+            return
 
         self.rect = init_image.get_rect()
         self.width = self.rect.width
@@ -72,6 +85,9 @@ class ImageElement:
             self.__get_init_size()
         
         self.surface = get_image(self.path, self.width, self.height)
+
+        if not self.surface:
+            return
         
         self.rect = self.surface.get_rect()
 

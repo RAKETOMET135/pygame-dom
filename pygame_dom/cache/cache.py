@@ -11,14 +11,17 @@ def get_font(name: str, size: int, bold: bool, italic: bool) -> pygame.font.Font
     
     return cache_fonts[key]
 
-def get_image(path: str, width: int, height: int) -> pygame.Surface:
+def get_image(path: str, width: int, height: int) -> pygame.Surface | None:
     key: tuple[str, int, int] = (path, width, height)
 
     if not key in cache_images:
-        image: pygame.Surface = pygame.image.load(path).convert_alpha()
+        try:
+            image: pygame.Surface = pygame.image.load(path).convert_alpha()
 
-        image = pygame.transform.smoothscale(image, (width, height))
+            image = pygame.transform.smoothscale(image, (width, height))
 
-        cache_images[key] = image
+            cache_images[key] = image
+        except:
+            return None
     
     return cache_images[key]
