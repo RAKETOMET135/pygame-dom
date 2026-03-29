@@ -6,6 +6,8 @@ from pygame_dom.ui_element import UIElement
 from pygame_dom.ui_render_object import UIRenderObject
 from pygame_dom.style_sheet import StyleSheet
 from pygame_dom.ui_event import UIEvent
+from pygame_dom.ui_state import UIState, UIStateParser
+from pygame_dom.cache.registry import add_page
 import pygame
 
 class UIPage:
@@ -32,10 +34,14 @@ class UIPage:
         self.elements = elements
         self.instances = []
 
+        self.state_parser = UIStateParser()
+
         for element in elements:
             self.__build_element(element)
 
         self.__build_base_data()
+
+        add_page(self)
 
     def __build_base_data(self) -> None:
         self.font = pygame.font.SysFont(None, 24)
@@ -93,6 +99,8 @@ class UIPage:
         ui_element.set_classes(element.get("class") or [])
         ui_element.set_id(element.get("id") or "")
         ui_element.attrs = element.attrs
+
+        self.state_parser.parse_text(element_text, ui_element)
 
         if parent:
             parent.add_child(ui_element)
