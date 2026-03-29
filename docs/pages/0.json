@@ -3,17 +3,17 @@
     "content": [
         {
             "type": "text",
-            "text": "RUI is a UI framework for creating user interface inside of a pygame application. RUI converts HTML and CSS files into user interface with the support of event handling."
+            "text": "pygame-dom is a UI framework for creating user interface inside of a pygame application. pygame-dom converts HTML and CSS files into user interface with the support of event handling."
         },
         {
             "type": "code",
             "lang": "python",
             "filename": "app.py",
             "code": [
-                "<span class='import'>from</span> <span class='class'>rui</span> <span class='import'>import</span> <span class='class'>RUI</span>, <span class='class'>UIPage</span>, <span class='class'>UIEvent</span>",
+                "<span class='import'>from</span> <span class='class'>pygame-dom</span> <span class='import'>import</span> <span class='class'>DOM</span>, <span class='class'>UIPage</span>, <span class='class'>UIEvent</span>",
                 "<span class='import'>import</span> <span class='class'>pygame<span>",
                 "",
-                "<span class='func'>@</span><span class='class'>RUI</span><span class='func'>.register<span><span class='paren'>()</span>",
+                "<span class='func'>@</span><span class='class'>DOM</span><span class='func'>.register<span><span class='paren'>()</span>",
                 "<span class='keyw'>def</span> <span class='func'>on_button_click</span><span class='paren'>(</span><span class='param'>event</span>: <span class='class'>UIEvent</span><span class='paren'>)</span> -> <span class='val'>None</span>:",
                 "\t<span class='func'>print</span><span class='paren'>(</span><span class='str'>\"click\"</span><span class='paren'>)</span>",
                 "",
@@ -24,7 +24,7 @@
                 "\tclock: <span class='class'>pygame</span>.<span class='class'>time</span>.<span class='class'>Clock</span> = <span class='class'>pygame</span>.<span class='class'>time</span>.<span class='class'>Clock</span><span class='paren'>()</span>",
                 "\trunning: <span class='class'>bool</span> = <span class='val'>True</span>",
                 "",
-                "\tpage: <span class='class'>UIPage</span> = <span class='class'>RUI</span>.<span class='func'>create_ui_page</span><span class='paren'>(</span><span class='str'>\"ui.html\"</span><span class='paren'>)</span>",
+                "\tpage: <span class='class'>UIPage</span> = <span class='class'>DOM</span>.<span class='func'>create_ui_page</span><span class='paren'>(</span><span class='str'>\"ui.html\"</span><span class='paren'>)</span>",
                 "\tpage.<span class='func'>style</span><span class='paren'>(</span><span class='str'>\"ui.css\"</span><span class='paren'>)</span>",
                 "",
                 "\t<span class='import'>while</span> running:",
