@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pygame-dom"
-version = "0.1.0"
+version = "0.1.1"
 description = "UI framework for creating pygame UI using HTML and CSS"
 authors = [
     { name = "RAKETOMET135" }
@@ -29,3 +29,6 @@ Docs = "https://raketomet135.github.io/pygame-dom/docs/docs.html"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["pygame_dom*"]
+
+[tool.setuptools.package-data]
+"pygame_dom.style" = ["*.css"]

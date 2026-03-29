@@ -56,7 +56,7 @@ class StyleSheet:
 
     def __load_default_css(self) -> None:
         try:
-            with resources.open_text("pygame_dom", "default.css") as file:
+            with resources.open_text("pygame_dom.style", "default.css") as file:
                 css_content: str = file.read()
                 css_content = self.__polish_css_string(css_content)
 

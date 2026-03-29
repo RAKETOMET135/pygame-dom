@@ -3,15 +3,20 @@
     "content": [
         {
             "type": "text",
-            "text": "pygame-dom is a UI framework for creating user interface inside of a pygame application. pygame-dom converts HTML and CSS files into user interface with the support of event handling."
+            "text": "Pygame-dom is a UI framework for creating user interface inside of a pygame application. Pygame-dom converts HTML and CSS files into user interface with the support of event handling."
+        },
+        {
+            "type": "text",
+            "text": "Example below shows basic use of this framework with a registered custom event. HTML and CSS files are not included, but it is important to mention that events are linked using HTML file attributes for elements like: onclick=\"function_name\"."
         },
         {
             "type": "code",
             "lang": "python",
             "filename": "app.py",
+            "header_color": "cornflowerblue",
             "code": [
                 "<span class='import'>from</span> <span class='class'>pygame_dom</span> <span class='import'>import</span> <span class='class'>DOM</span>, <span class='class'>UIPage</span>, <span class='class'>UIEvent</span>",
-                "<span class='import'>import</span> <span class='class'>pygame<span>",
+                "<span class='import'>import</span> <span class='class'>pygame</span>",
                 "",
                 "<span class='func'>@</span><span class='class'>DOM</span><span class='func'>.register<span><span class='paren'>()</span>",
                 "<span class='keyw'>def</span> <span class='func'>on_button_click</span><span class='paren'>(</span><span class='param'>event</span>: <span class='class'>UIEvent</span><span class='paren'>)</span> -> <span class='val'>None</span>:",

@@ -34,12 +34,20 @@ function loadSection(sectionData) {
                 sectionContent.append(textElement)
 
                 break
+            case "subheader":
+                const headerTextElement = document.createElement("h3")
+                headerTextElement.innerHTML = item.text
+
+                sectionContent.append(headerTextElement)
+
+                break
             case "code":
                 const codeElement = document.createElement("div")
                 codeElement.classList.add("code-block")
 
                 const codeType = document.createElement("p")
                 codeType.innerHTML = `${item.filename} <span>${item.lang}</span>`
+                codeType.style.backgroundColor = item.header_color
 
                 codeElement.append(codeType)
 
@@ -59,7 +67,7 @@ function loadSection(sectionData) {
 }
 
 function main() {
-    const urlParams = new URLSearchParams()
+    const urlParams = new URLSearchParams(window.location.search)
 
     let section = urlParams.get("section")
 

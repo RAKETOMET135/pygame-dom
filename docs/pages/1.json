@@ -1,0 +1,88 @@
+{
+    "header": "Getting started",
+    "content": [
+        {
+            "type": "text",
+            "text": "You can install pygame-dom using pip in terminal:"
+        },
+        {
+            "type": "code",
+            "lang": "bash",
+            "filename": "terminal",
+            "header_color": "green",
+            "code": [
+                "pip install pygame-dom"
+            ]
+        },
+        {
+            "type": "subheader",
+            "text": "After installation setup"
+        },
+        {
+            "type": "text",
+            "text": "Pygame-dom provides 3 important classes: DOM, UIPage and UIEvent:"
+        },
+        {
+            "type": "code",
+            "lang": "python",
+            "filename": "app.py",
+            "header_color": "cornflowerblue",
+            "code": [
+                "<span class='import'>from</span> <span class='class'>pygame_dom</span> <span class='import'>import</span> <span class='class'>DOM</span>, <span class='class'>UIPage</span>, <span class='class'>UIEvent</span>",
+                "<span class='import'>import</span> <span class='class'>pygame</span> # You have to also import pygame for other stuff like creating the window or getting events"
+            ]
+        },
+        {
+            "type": "text",
+            "text": "To create your first UIPage from a HTML file you can use:"
+        },
+        {
+            "type": "code",
+            "lang": "python",
+            "filename": "app.py",
+            "header_color": "cornflowerblue",
+            "code": [
+                "page: <span class='class'>UIPage</span> = <span class='class'>DOM</span>.<span class='func'>create_ui_page</span><span class='paren'>(</span><span class='str'>\"page.html\"</span><span class='paren'>)</span> # \"page.html\" - path to HTML file"
+            ]
+        },
+        {
+            "type": "text",
+            "text": "Pages can be styled using a CSS file:"
+        },
+        {
+            "type": "code",
+            "lang": "python",
+            "filename": "app.py",
+            "header_color": "cornflowerblue",
+            "code": [
+                "page.<span class='func'>style</span><span class='paren'>(</span><span class='str'>\"page.css\"</span><span class='paren'>)</span> # \"page.css\" - path to CSS file"
+            ]
+        },
+        {
+            "type": "text",
+            "text": "Pages can be rendered inside of the pygame's game loop and require screen (pygame.Surface) and events (list[pygame.event.Event]). Example below shows how to get events from pygame and how to render the page."
+        },
+        {
+            "type": "code",
+            "lang": "python",
+            "filename": "app.py",
+            "header_color": "cornflowerblue",
+            "code": [
+                "events: <span class='class'>list</span><span class='paren'>[</span><span class='class'>pygame</span>.<span class='class'>event</span>.<span class='class'>Event</span><span class='paren'>]</span> = <span class='class'>pygame</span>.<span class='class'>event</span>.<span class='func'>get</span><span class='paren'>()</span> # Get list of events inside of the pygame's gameloop"
+            ]
+        },
+        {
+            "type": "code",
+            "lang": "python",
+            "filename": "app.py",
+            "header_color": "cornflowerblue",
+            "code": [
+                "page.<span class='func'>render</span><span class='paren'>(</span>screen, events<span class='paren'>)</span> # Render page in the pygame's gameloop"
+            ]
+        },
+        {
+            "type": "text",
+            "text": "<span style='color: red'>It is important to use pygame.event.get() only ones in the pygame's gameloop. Pygame's pygame.event.get() returns the events and it also removes them from the occured events list.<span>"
+        }
+    ]
+}
