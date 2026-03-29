@@ -60,10 +60,10 @@ class UIElement:
     def set_text(self, new_text: str) -> None:
         if not self.element:
             return
-        
-        if not self.element.text:
+
+        if not hasattr(self.element, "text"):
             return
-        
+
         self.element.text = new_text
 
     def set_classes(self, classes: list[str]) -> None:
