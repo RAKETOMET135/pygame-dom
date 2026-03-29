@@ -57,3 +57,7 @@ button {
     font-size: 12px;
     padding: 1px 6px;
 }
+
+img {
+    background-color: transparent;
+}

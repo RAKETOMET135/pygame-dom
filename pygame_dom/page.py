@@ -94,6 +94,8 @@ class UIPage:
                 element_instance = DIV(element_text)
             case "button":
                 element_instance = BUTTON(element_text)
+            case "img":
+                element_instance = IMG(element.get("src", ""))
         
         ui_element: UIElement = UIElement(element_instance, element_type, parent)
         ui_element.set_classes(element.get("class") or [])
