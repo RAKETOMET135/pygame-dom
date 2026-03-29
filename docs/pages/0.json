@@ -10,7 +10,7 @@
             "lang": "python",
             "filename": "app.py",
             "code": [
-                "<span class='import'>from</span> <span class='class'>pygame-dom</span> <span class='import'>import</span> <span class='class'>DOM</span>, <span class='class'>UIPage</span>, <span class='class'>UIEvent</span>",
+                "<span class='import'>from</span> <span class='class'>pygame_dom</span> <span class='import'>import</span> <span class='class'>DOM</span>, <span class='class'>UIPage</span>, <span class='class'>UIEvent</span>",
                 "<span class='import'>import</span> <span class='class'>pygame<span>",
                 "",
                 "<span class='func'>@</span><span class='class'>DOM</span><span class='func'>.register<span><span class='paren'>()</span>",
