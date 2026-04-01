@@ -3,4 +3,4 @@ from pygame_dom.rui import UIPage, UIEvent, UIState
 
 __all__ = ["DOM", "UIPage", "UIEvent", "UIState"]
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"

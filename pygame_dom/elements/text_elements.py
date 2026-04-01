@@ -28,14 +28,14 @@ class TextElement:
         
         return self.rect.width
 
-    def set_style(self, ui_render_object: UIRenderObject, classes: list[str], _id: str, type: str) -> dict:
+    def set_style(self, ui_render_object: UIRenderObject, classes: list[str], _id: str, type: str, modifiers: dict) -> dict:
         if not ui_render_object:
             return {}
 
         if not ui_render_object.style_sheet:
             return {}
 
-        self.style = ui_render_object.style_sheet.get_style(type, classes, _id)
+        self.style = ui_render_object.style_sheet.get_style(type, classes, _id, modifiers)
 
         self.color = self.style["color"]
         self.font_size = self.style["font-size"]

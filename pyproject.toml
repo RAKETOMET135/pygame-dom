@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pygame-dom"
-version = "0.1.1"
+version = "0.1.2"
 description = "UI framework for creating pygame UI using HTML and CSS"
 authors = [
     { name = "RAKETOMET135" }
@@ -13,7 +13,7 @@ requires-python = ">=3.10"
 readme = "README.md"
 license = { text = "MIT" }
 classifiers = [
-    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
     "Topic :: Games/Entertainment",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",

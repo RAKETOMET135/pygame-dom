@@ -356,7 +356,7 @@ class StyleSheet:
             case "align-items":
                 style["align-items"] = self.get_pygame_align_items(style_rule.value)
 
-    def get_style(self, _type: str, classes: list[str], _id: str) -> dict:
+    def get_style(self, _type: str, classes: list[str], _id: str, modifiers: dict) -> dict:
         style: dict = {
             "color": (0, 0, 0, 0),
             "font-family": "timesnewroman",
@@ -425,6 +425,51 @@ class StyleSheet:
                 self.apply_style_rule(style, style_rule)
 
             break
+
+        for modifier, state in modifiers.items():
+            if not state:
+                continue
+
+            mod: str = _type + ":" + modifier
+
+            for tag_style in self.default_style:
+                if not tag_style.selector == mod:
+                    continue
+
+                for style_rule in tag_style.style_rules:
+                    self.apply_style_rule(style, style_rule)
+
+                break
+            
+            for tag_style in self.tag_styles:
+                if not tag_style.selector == mod and not tag_style.selector == "*:hover":
+                    continue
+            
+                for style_rule in tag_style.style_rules:
+                    self.apply_style_rule(style, style_rule)
+
+                break
+
+            _classes: list[str] = []
+
+            for _class in classes:
+                _classes.append(_class + ":" + modifier)
+
+            for class_style in self.class_styles:
+                if not class_style.style_class in _classes:
+                    continue
+
+                for style_rule in class_style.style_rules:
+                    self.apply_style_rule(style, style_rule)
+
+            for id_style in self.id_styles:
+                if not id_style.style_id == _id + ":" + modifier:
+                    continue
+
+                for style_rule in id_style.style_rules:
+                    self.apply_style_rule(style, style_rule)
+
+                break
 
         return style
 

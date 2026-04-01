@@ -238,7 +238,7 @@ class UIElement:
         ui_render_object.render_zindex += 1
 
         # Get style
-        style: dict = self.element.set_style(ui_render_object, self.classes, self.id, self.type)
+        style: dict = self.element.set_style(ui_render_object, self.classes, self.id, self.type, { "hover": self.is_mouse_in, "active": self.is_left_click_held })
         padding: tuple[int, int, int, int] = self.__get_padding(style)
         margin: tuple[int, int, int, int] = self.__get_margin(style)
         border_radius: tuple[int, int, int, int] = self.__get_border_radius(style)
