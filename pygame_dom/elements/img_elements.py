@@ -14,6 +14,7 @@ class ImageElement:
         self.height = -1
         self._width = -1
         self._height = -1
+        self.scale = 1
     
     def set_image_path(self, path: str) -> None:
         if self.path == path:
@@ -27,13 +28,13 @@ class ImageElement:
         if not self.rect:
             return 0
         
-        return self.rect.height
+        return int(self.rect.height / self.scale)
     
     def get_width(self) -> int:
         if not self.rect:
             return 0
         
-        return self.rect.width
+        return int(self.rect.width / self.scale)
     
     def set_style(self, ui_render_object: UIRenderObject, classes: list[str], _id: str, type: str, modifiers: dict) -> dict:
         if not ui_render_object:
@@ -46,6 +47,8 @@ class ImageElement:
 
         width: int = self.style.get("width")
         height: int = self.style.get("height")
+
+        self.scale = self.style.get("scale", 1)
 
         if width and height:
             self.width = width
@@ -63,6 +66,11 @@ class ImageElement:
         else:
             self.width = self._width
             self.height = self._height
+        
+        self.width = int(self.width * self.scale)
+        self.height = int(self.height * self.scale)
+
+        self.rect = pygame.rect.Rect(0, 0, self.width, self.height)
 
         return self.style
     
@@ -80,11 +88,11 @@ class ImageElement:
         self._width = self.width
         self._height = self.height
 
-    def draw(self, screen: pygame.Surface, ui_render_object: UIRenderObject, padding: tuple[int, int, int, int], margin: tuple[int, int, int, int], offset: tuple[int, int, int, int], outerPosition: tuple[int, int]) -> None:
+    def draw(self, screen: pygame.Surface, ui_render_object: UIRenderObject, padding: tuple[int, int, int, int], margin: tuple[int, int, int, int], offset: tuple[int, int, int, int], outerPosition: tuple[int, int, int, int]) -> None:
         if self.width < 0 or self.height < 0:
             self.__get_init_size()
         
-        self.surface = get_image(self.path, self.width, self.height)
+        self.surface = get_image(self.path, int(self.width), int(self.height))
 
         if not self.surface:
             return

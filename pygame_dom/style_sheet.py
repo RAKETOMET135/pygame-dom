@@ -357,6 +357,10 @@ class StyleSheet:
                 style["align-items"] = self.get_pygame_align_items(style_rule.value)
             case "cursor":
                 style["cursor"] = self.get_pygame_cursor(style_rule.value)
+            case "visibility":
+                style["visibility"] = self.get_pygame_visibility(style_rule.value)
+            case "scale":
+                style["scale"] = self.get_pygame_scale(style_rule.value)
 
     def get_style(self, _type: str, classes: list[str], _id: str, modifiers: dict) -> dict:
         style: dict = {
@@ -389,7 +393,9 @@ class StyleSheet:
             "height": 0,
             "display": "block",
             "align-items": "stretch",
-            "cursor": "default"
+            "cursor": "default",
+            "visibility": "visible",
+            "scale": 1
         }
 
         for tag_style in self.default_style:
@@ -494,6 +500,27 @@ class StyleSheet:
 
         return final
 
+    def get_pygame_scale(self, scale: str) -> float:
+        try:
+            s: float = float(scale)
+
+            if s < 0:
+                return 0
+            elif s > 100:
+                return 100
+            
+            return s
+        except:
+            pass
+        
+        return 1
+
+    def get_pygame_visibility(self, visibility: str) -> str:
+        if visibility == "visible" or visibility == "hidden":
+            return visibility
+        
+        return "hidden"
+
     def get_pygame_cursor(self, cursor: str) -> str:
         if cursor == "default" or cursor == "pointer" or cursor == "text" or cursor == "wait" or cursor == "crosshair" or cursor == "move":
             return cursor
@@ -516,7 +543,7 @@ class StyleSheet:
         return "stretch"
 
     def get_pygame_display(self, display: str) -> str:
-        if display == "inline" or display == "block" or display == "flex":
+        if display == "inline" or display == "block" or display == "none":
             return display
         
         return "block"

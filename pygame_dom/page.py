@@ -291,7 +291,7 @@ class UIPage:
 
             data: dict = instance.draw(screen, self.ui_render_object)
 
-            if data["hover"]:
+            if data.get("hover", False):
                 element_hovered = True
 
             if self.__is_point_in_element(mouse_position, instance):

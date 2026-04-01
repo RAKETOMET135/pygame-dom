@@ -15,18 +15,19 @@ class TextElement:
         self.font_size = 0
         self.font_weight = 400
         self.font_style = "normal"
+        self.scale = 1
     
     def get_height(self) -> int:
         if not self.rect:
             return 0
         
-        return self.rect.height
+        return int(self.rect.height / self.scale)
 
     def get_width(self) -> int:
         if not self.rect:
             return 0
         
-        return self.rect.width
+        return int(self.rect.width / self.scale)
 
     def __get_font_family(self, font_family: str) -> str:
         if font_family.startswith("url("):
@@ -45,6 +46,8 @@ class TextElement:
 
         self.style = ui_render_object.style_sheet.get_style(type, classes, _id, modifiers)
 
+        self.scale = self.style.get("scale", 1)
+
         self.color = self.style["color"]
         self.font_size = self.style["font-size"]
         self.font_weight = self.style["font-weight"]
@@ -56,8 +59,8 @@ class TextElement:
         self.font = get_font(self.__get_font_family(self.style.get("font-family")), self.font_size, is_bold, is_italic)
 
         return self.style
-
-    def draw(self, screen: pygame.Surface, ui_render_object: UIRenderObject, padding: tuple[int, int, int, int], margin: tuple[int, int, int, int], offset: tuple[int, int, int, int], outerPosition: tuple[int, int]) -> None:
+    
+    def pre_render_font(self, ui_render_object: UIRenderObject) -> None:
         if not self.font:
             self.font = ui_render_object.font
 
@@ -65,11 +68,22 @@ class TextElement:
 
         if len(self.color) > 3:
             self.surface.set_alpha(self.color[3])
+        
+        self.rect = self.surface.get_rect()
+
+        self.surface = pygame.transform.smoothscale(self.surface, (int(self.rect.width * self.scale), int(self.rect.height * self.scale)))
 
         self.rect = self.surface.get_rect()
 
-        self.rect.x = outerPosition[0] + padding[3]
-        self.rect.y = outerPosition[1] + padding[0]
+    def draw(self, screen: pygame.Surface, ui_render_object: UIRenderObject, padding: tuple[int, int, int, int], margin: tuple[int, int, int, int], offset: tuple[int, int, int, int], outerPosition: tuple[int, int, int, int]) -> None:
+        if not self.surface:
+            return
+
+        self.rect.x = outerPosition[0] + int((outerPosition[2] - self.rect.width) / 2)
+        self.rect.y = outerPosition[1] + int((outerPosition[3] - self.rect.height) / 2)
+
+        #self.rect.x = outerPosition[0] + padding[3] * self.scale + int((self.rect.x * self.scale - self.rect.x) / 2)
+        #self.rect.y = outerPosition[1] + padding[0] * self.scale + int((self.rect.y * self.scale - self.rect.y) / 2)
 
         screen.blit(self.surface, self.rect)
 

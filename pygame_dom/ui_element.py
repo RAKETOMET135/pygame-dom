@@ -122,7 +122,7 @@ class UIElement:
     def __get_border_radius(self, style: dict) -> tuple[int, int, int, int]:
         return (style.get("border-top-left-radius", 0), style.get("border-top-right-radius", 0), style.get("border-bottom-left-radius", 0), style.get("border-bottom-right-radius", 0))
 
-    def __get_offset(self, style: dict, position: str) -> tuple[int, int, int, int]:
+    def __get_offset(self, style: dict, position: str, scale: float) -> tuple[int, int, int, int]:
         if position == "static":
             return (-1, -1, -1, -1)
 
@@ -269,9 +269,17 @@ class UIElement:
         margin: tuple[int, int, int, int] = self.__get_margin(style)
         border_radius: tuple[int, int, int, int] = self.__get_border_radius(style)
         self.position = style.get("position", "static")
-        offset: tuple[int, int, int, int] = self.__get_offset(style, self.position)
+        scale: float = style.get("scale", 1)
+        offset: tuple[int, int, int, int] = self.__get_offset(style, self.position, scale)
         size: tuple[int, int] = self.__get_size(style)
         display: str = style.get("display", "block")
+        visibility: str = style.get("visibility", "visible")
+
+        if hasattr(self.element, "pre_render_font"):
+            self.element.pre_render_font(ui_render_object)
+
+        if display == "none" or visibility == "hidden":
+            return {}
 
         if self.is_mouse_in:
             self.__parse_cursor(style.get("cursor", "default"))
@@ -284,7 +292,7 @@ class UIElement:
             self.display = Display.FLEX
         
         # Set element to new line
-        if self.display == Display.BLOCK or self.display == Display.FLEX:
+        if (self.display == Display.BLOCK or self.display == Display.FLEX) and not self.position == "absolute":
             ui_render_object.render_line += 1
             ui_render_object.render_x = 0
             ui_render_object.render_y += ui_render_object.render_line_height
@@ -312,6 +320,10 @@ class UIElement:
         position_x: int = self.__calc_x_position(ui_render_object, margin, padding, offset, screen_rect, element_width)
         position_y: int = self.__calc_y_position(ui_render_object, margin, padding, offset, screen_rect, element_height)
 
+        # Change element position to make scale center
+        position_x -= int((element_width * scale - element_width) / 2)
+        position_y -= int((element_height * scale - element_height) / 2)
+
         # Update position for flex elements
         if flex_position_x >= 0:
             position_x = flex_position_x
@@ -323,8 +335,8 @@ class UIElement:
         self.rendered_y = position_y
         self.rendered_size_x = element_width
         self.rendered_size_y = element_height
-        self.actual_size_x = element_width + padding[1] + padding[3]
-        self.actual_size_y = element_height + padding[0] + padding[2]
+        self.actual_size_x = int((element_width) * scale) + padding[1] + padding[3]
+        self.actual_size_y = int((element_height) * scale) + padding[0] + padding[2]
 
         self.ui_render_object_stamp.render_x = position_x
         self.ui_render_object_stamp.render_y = position_y
@@ -336,8 +348,8 @@ class UIElement:
             rect: tuple[int, int, int, int] = (
                 position_x,
                 position_y,
-                element_width + padding[1] + padding[3],
-                element_height + padding[0] + padding[2]
+                self.actual_size_x,
+                self.actual_size_y
             )
 
             pygame.draw.rect(
@@ -361,7 +373,7 @@ class UIElement:
             #    width=0
             #)
 
-        self.element.draw(screen, ui_render_object, padding, margin, offset, (position_x, position_y))
+        self.element.draw(screen, ui_render_object, padding, margin, offset, (position_x, position_y, self.actual_size_x, self.actual_size_y))
 
         # Set data for flex children
         children_data: dict = {
