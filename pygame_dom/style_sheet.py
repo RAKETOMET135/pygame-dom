@@ -355,6 +355,8 @@ class StyleSheet:
                 style["display"] = self.get_pygame_display(style_rule.value)
             case "align-items":
                 style["align-items"] = self.get_pygame_align_items(style_rule.value)
+            case "cursor":
+                style["cursor"] = self.get_pygame_cursor(style_rule.value)
 
     def get_style(self, _type: str, classes: list[str], _id: str, modifiers: dict) -> dict:
         style: dict = {
@@ -386,7 +388,8 @@ class StyleSheet:
             "width": 0,
             "height": 0,
             "display": "block",
-            "align-items": "stretch"
+            "align-items": "stretch",
+            "cursor": "default"
         }
 
         for tag_style in self.default_style:
@@ -490,6 +493,15 @@ class StyleSheet:
             final.append(builded_word)
 
         return final
+
+    def get_pygame_cursor(self, cursor: str) -> str:
+        if cursor == "default" or cursor == "pointer" or cursor == "text" or cursor == "wait" or cursor == "crosshair" or cursor == "move":
+            return cursor
+        
+        if cursor.startswith("url(") and cursor.endswith(")"):
+            return cursor
+        
+        return "default"
 
     def get_pygame_align_items(self, align_items: str):
         if align_items == "stretch" or align_items == "end" or align_items == "start" or align_items == "center":
@@ -623,6 +635,9 @@ class StyleSheet:
         if css_font in pygame.sysfont.get_fonts():
             return css_font
         
+        if css_font.startswith("url(") and css_font.endswith(")"):
+            return css_font
+
         return "timesnewroman"
 
     def get_pygame_color(self, css_color: str) -> tuple[int, int, int] | tuple[int, int, int, int]:

@@ -28,6 +28,14 @@ class TextElement:
         
         return self.rect.width
 
+    def __get_font_family(self, font_family: str) -> str:
+        if font_family.startswith("url("):
+            font_path: str = font_family[5:len(font_family) - 2]
+
+            return "*" + font_path
+
+        return font_family
+
     def set_style(self, ui_render_object: UIRenderObject, classes: list[str], _id: str, type: str, modifiers: dict) -> dict:
         if not ui_render_object:
             return {}
@@ -45,7 +53,7 @@ class TextElement:
         is_bold: bool = self.font_weight >= 600
         is_italic: bool = self.font_style == "italic"
 
-        self.font = get_font(self.style["font-family"], self.font_size, is_bold, is_italic)
+        self.font = get_font(self.__get_font_family(self.style.get("font-family")), self.font_size, is_bold, is_italic)
 
         return self.style
 

@@ -26,6 +26,8 @@ class UIElement:
         self.rendered_size_y = 0
         self.actual_size_x = 0
         self.actual_size_y = 0
+        self.cursor = pygame.SYSTEM_CURSOR_ARROW
+        self.custom_cursor = None
 
         self.classes = []
         self.id = ""
@@ -201,9 +203,33 @@ class UIElement:
 
         return y_position
 
-    def draw(self, screen: pygame.Surface, ui_render_object: UIRenderObject, children_data: dict = {}) -> None:
-        if not self.element:
+    def __parse_cursor(self, cursor: str) -> None:
+        system_cursor_id: int | None = None
+
+        match cursor:
+            case "default":
+                system_cursor_id = pygame.SYSTEM_CURSOR_ARROW
+            case "pointer":
+                system_cursor_id = pygame.SYSTEM_CURSOR_HAND
+            case "text":
+                system_cursor_id = pygame.SYSTEM_CURSOR_IBEAM
+            case "wait":
+                system_cursor_id = pygame.SYSTEM_CURSOR_WAIT
+            case "crosshair":
+                system_cursor_id = pygame.SYSTEM_CURSOR_CROSSHAIR
+            case "move":
+                system_cursor_id = pygame.SYSTEM_CURSOR_SIZEALL
+        
+        if not system_cursor_id and not system_cursor_id == 0:
+            self.custom_cursor = cursor[5:len(cursor) - 2]
+
             return
+        
+        self.cursor = system_cursor_id
+
+    def draw(self, screen: pygame.Surface, ui_render_object: UIRenderObject, children_data: dict = {}) -> dict:
+        if not self.element:
+            return {}
 
         # Reset one frame variables
         self.is_mouse_enter = False
@@ -246,6 +272,9 @@ class UIElement:
         offset: tuple[int, int, int, int] = self.__get_offset(style, self.position)
         size: tuple[int, int] = self.__get_size(style)
         display: str = style.get("display", "block")
+
+        if self.is_mouse_in:
+            self.__parse_cursor(style.get("cursor", "default"))
 
         if display == "block":
             self.display = Display.BLOCK
@@ -357,7 +386,7 @@ class UIElement:
         ui_render_object.render_zindex += self.ui_render_object_stamp.render_zindex
 
         if self.position == "absolute":
-            return
+            return { "hover": self.is_mouse_in }
 
         # Update data for displays
         match self.display:
@@ -371,3 +400,5 @@ class UIElement:
 
                 if element_height + padding[0] + padding[2] + margin[0] + margin[2] > ui_render_object.render_line_height:
                     ui_render_object.render_line_height = element_height + padding[0] + padding[2] + margin[0] + margin[2]
+        
+        return { "hover": self.is_mouse_in }

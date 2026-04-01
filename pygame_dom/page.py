@@ -8,6 +8,7 @@ from pygame_dom.style_sheet import StyleSheet
 from pygame_dom.ui_event import UIEvent
 from pygame_dom.ui_state import UIState, UIStateParser
 from pygame_dom.cache.registry import add_page
+from pygame_dom.cache.cache import get_image
 import pygame
 
 class UIPage:
@@ -48,6 +49,7 @@ class UIPage:
 
         self.ui_render_object = UIRenderObject(self.font, None)
         self.style_sheet = None
+        self.custom_cursor = None
 
     def style(self, css_file_path: str) -> None:
         """
@@ -282,10 +284,15 @@ class UIPage:
                 created_events.append("mousewheel")
                 created_event_attrs.append({"delta_x": event.x, "delta_y": event.y})
 
+        element_hovered: bool = False
+
         for instance in self.instances:
             instance.latest_render_zindex = -1
 
-            instance.draw(screen, self.ui_render_object)
+            data: dict = instance.draw(screen, self.ui_render_object)
+
+            if data["hover"]:
+                element_hovered = True
 
             if self.__is_point_in_element(mouse_position, instance):
                 affected_elements.append(instance)
@@ -322,6 +329,25 @@ class UIPage:
             self.__check_sub_elements(mouse_position, instance, affected_elements, btn_down, btn_up, btn)
 
         root_event_element: UIElement = self.__get_top_element(affected_elements)
+
+        if not element_hovered and not pygame.mouse.get_cursor().type == pygame.SYSTEM_CURSOR_ARROW:
+            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
+            pygame.mouse.set_visible(True)
+
+            self.custom_cursor = None
+        else:
+            if root_event_element.custom_cursor:
+                pygame.mouse.set_visible(False)
+
+                self.custom_cursor = get_image(root_event_element.custom_cursor, 24, 24)
+            elif not pygame.mouse.get_cursor().type == root_event_element.cursor:
+                pygame.mouse.set_cursor(root_event_element.cursor)
+                pygame.mouse.set_visible(True)
+
+                self.custom_cursor = None
+
+        if self.custom_cursor:
+            screen.blit(self.custom_cursor, mouse_position)
 
         current_event: UIEvent | None = None
 
