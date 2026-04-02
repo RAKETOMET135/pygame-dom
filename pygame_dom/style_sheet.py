@@ -494,7 +494,7 @@ class StyleSheet:
         builded_word: str = ""
         for letter in string:
             if letter.isdigit():
-                if len(builded_word) > 0 and builded_word[len(builded_word) - 1].isalpha():
+                if len(builded_word) > 0 and (builded_word[len(builded_word) - 1].isalpha() or builded_word[len(builded_word) - 1] == "%"):
                     final.append(builded_word)
 
                     builded_word = ""
@@ -753,7 +753,7 @@ class StyleSheet:
             padding_left: int = self.get_pygame_onevalue_size(paddings[3])
 
             return (padding_top, padding_right, padding_bottom, padding_left)
-        
+
         return (0, 0, 0, 0)
 
     def get_pygame_onevalue_size(self, size: str) -> int:

@@ -119,8 +119,38 @@ class UIElement:
         
         return self.rendered_size_y
 
-    def __get_padding(self, style: dict) -> tuple[int, int, int, int]:
-        return (style.get("padding-top", 0), style.get("padding-right", 0), style.get("padding-bottom", 0), style.get("padding-left", 0))
+    def __get_padding(self, style: dict, screen: pygame.Surface) -> tuple[int, int, int, int]:
+        pad_left: int | str = style.get("padding-left", 0)
+        pad_right: int | str = style.get("padding-right", 0)
+        pad_top: int | str = style.get("padding-top", 0)
+        pad_bottom: int | str = style.get("padding-bottom", 0)
+
+        width: int = 0
+        height: int = 0
+
+        if self.parent:
+            width = self.parent.get_rendered_size_x()
+            height = self.parent.get_rendered_size_y()
+
+        if width <= 0:
+            width = screen.get_width()
+        
+        if height <= 0:
+            height = screen.get_height()
+
+        if isinstance(pad_left, str) and pad_left.endswith("%"):
+            pad_left = (width / 100) * float(pad_left[:len(pad_left) - 1])
+        
+        if isinstance(pad_right, str) and pad_right.endswith("%"):
+            pad_right = (width / 100) * float(pad_right[:len(pad_right) - 1])
+
+        if isinstance(pad_top, str) and pad_top.endswith("%"):
+            pad_top = (height / 100) * float(pad_top[:len(pad_top) - 1])
+        
+        if isinstance(pad_bottom, str) and pad_bottom.endswith("%"):
+            pad_bottom = (height / 100) * float(pad_bottom[:len(pad_bottom) - 1])
+
+        return (pad_top, pad_right, pad_bottom, pad_left)
 
     def __get_margin(self, style: dict) -> tuple[int, int, int, int]:
         return (style.get("margin-top", 0), style.get("margin-right", 0), style.get("margin-bottom", 0), style.get("margin-left", 0))
@@ -303,7 +333,7 @@ class UIElement:
 
         # Get style
         style: dict = self.element.set_style(ui_render_object, self.classes, self.id, self.type, { "hover": self.is_hover, "active": self.is_active })
-        padding: tuple[int, int, int, int] = self.__get_padding(style)
+        padding: tuple[int, int, int, int] = self.__get_padding(style, screen)
         margin: tuple[int, int, int, int] = self.__get_margin(style)
         border_radius: tuple[int, int, int, int] = self.__get_border_radius(style)
         self.position = style.get("position", "static")
@@ -353,11 +383,39 @@ class UIElement:
         element_width: int = self.element.get_width()
         element_height: int = self.element.get_height()
 
-        if size[0] > 0:
-            element_width = size[0]
+        # Width
+        if isinstance(size[0], str) and size[0].endswith("%"):
+            size_x: int = 0
+
+            if self.parent:
+                size_x = self.parent.get_rendered_size_x()
+
+            if size_x <= 0:
+                size_x = screen.get_width()
+            
+            size_x = (size_x / 100) * float(size[0][:len(size[0]) - 1])
+
+            element_width = int(size_x)
+        else:
+            if size[0] > 0:
+                element_width = size[0]
         
-        if size[1] > 0:
-            element_height = size[1]
+        # Height
+        if isinstance(size[1], str) and size[1].endswith("%"):
+            size_y: int = 0
+
+            if self.parent:
+                size_y = self.parent.get_rendered_size_y()
+            
+            if size_y <= 0:
+                size_y = screen.get_height()
+            
+            size_y = (size_y / 100) * float(size[1][:len(size[1]) - 1])
+
+            element_height = int(size_y)
+        else:
+            if size[1] > 0:
+                element_height = size[1]
 
         # Update elements using flex data
         flex_vertical_stretch: bool = children_data.get("vertical_stretch", False)
