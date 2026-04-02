@@ -363,6 +363,8 @@ class StyleSheet:
                 style["scale"] = self.get_pygame_scale(style_rule.value)
             case "transition":
                 style["transition"] = self.get_pygame_transition(style_rule.value)
+            case "translate":
+                style["translate"] = self.get_pygame_translate(style_rule.value)
 
     def get_style(self, _type: str, classes: list[str], _id: str, modifiers: dict) -> dict:
         style: dict = {
@@ -398,7 +400,8 @@ class StyleSheet:
             "cursor": "default",
             "visibility": "visible",
             "scale": 1,
-            "transition": {}
+            "transition": {},
+            "translate": (0, 0)
         }
 
         for tag_style in self.default_style:
@@ -510,6 +513,41 @@ class StyleSheet:
             return float(unit_string[:len(unit_string) - 1]) * 1_000
 
         return 0
+
+    def get_pygame_translate(self, translate: str) -> tuple[int | str, int | str]:
+        params: list[int | str] = []
+
+        num: str = ""
+
+        is_unit: bool = False
+
+        for letter in translate:
+            if letter.isdigit() or letter == "-":
+                if is_unit:
+                    is_unit = False
+
+                    params.append(num)
+
+                    num = ""
+
+                num += letter
+            else:
+                if len(num) > 0:
+                    is_unit = True
+                    num += letter
+        
+        if len(num) > 0:
+            params.append(num)
+        
+        for i in range(len(params)):
+            params[i] = self.get_pygame_onevalue_size(params[i])
+        
+        if len(params) == 1:
+            params.append(0)
+        elif len(params) > 2:
+            params = params[:2]
+
+        return tuple(params)
 
     def get_pygame_transition(self, transition: str) -> dict:
         o_transition: dict = {}

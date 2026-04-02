@@ -47,6 +47,12 @@ class UIElement:
         self.is_right_click_held = False
         self.is_left_click_turn = False
         self.is_right_click_turn = False
+        
+        self.is_hover = False
+        self.is_active = False
+
+        self.scale = 1
+        self.parent_scale = 1
 
     def on_event(self, event: UIEvent) -> None:
         for attr, value in self.attrs.items():
@@ -138,6 +144,8 @@ class UIElement:
         x_position: int = ui_render_object.render_x + margin[3]
 
         width: int = ui_render_object.width
+        left: int | str = offset[0]
+        right: int | str = offset[2]
 
         if width <= 0:
             width = screen_rect.width
@@ -157,13 +165,27 @@ class UIElement:
                 x_position = 0
                 width = screen_rect.width
 
-        if offset[0] >= 0 and offset[0] >= margin[3]:
-            x_position += offset[0] - margin[3]
-        elif offset[2] >= 0:
-            if offset[2] < margin[1]:
+        if isinstance(left, str) and left.endswith("%"):
+            left = float(left[:len(left) - 1])
+
+            width -= x_position
+            left = (width / 100) * left
+            width += x_position
+
+        if isinstance(right, str) and right.endswith("%"):
+            right = float(right[:len(right) - 1])
+
+            width -= x_position
+            right = (width / 100) * right
+            width += x_position
+
+        if left >= 0 and left >= margin[3]:
+            x_position += left - margin[3]
+        elif right >= 0:
+            if right < margin[1]:
                 x_position = width - (element_width + margin[1] + padding[1] + padding[3])
             else:
-                x_position = width - (element_width + padding[1] + offset[2] + padding[3])
+                x_position = width - (element_width + padding[1] + right + padding[3])
         
         return x_position
 
@@ -174,6 +196,8 @@ class UIElement:
         y_position: int = ui_render_object.render_y + margin[0]
 
         height: int = ui_render_object.height
+        top: int | str = offset[1]
+        bottom: int | str = offset[3]
 
         if height <= 0:
             height = screen_rect.height
@@ -193,13 +217,27 @@ class UIElement:
                 y_position = 0
                 height = screen_rect.height
 
-        if offset[1] >= 0 and offset[1] >= margin[0]:
-            y_position += offset[1] - margin[0]
-        elif offset[3] >= 0:
-            if offset[3] < margin[2]:
+        if isinstance(top, str) and top.endswith("%"):
+            top = float(top[:len(top) - 1])
+
+            height -= y_position
+            top = (height / 100) * top
+            height += y_position
+
+        if isinstance(bottom, str) and bottom.endswith("%"):
+            bottom = float(bottom[:len(bottom) - 1])
+
+            height -= y_position
+            bottom = (height / 100) * bottom
+            height += y_position
+
+        if top >= 0 and top >= margin[0]:
+            y_position += top - margin[0]
+        elif bottom >= 0:
+            if bottom < margin[2]:
                 y_position = height - (element_height + margin[2] + padding[2] + padding[0])
             else:
-                y_position = height - (element_height + padding[2] + offset[3] + padding[0])
+                y_position = height - (element_height + padding[2] + bottom + padding[0])
 
         return y_position
 
@@ -254,7 +292,7 @@ class UIElement:
         else:
             self.ui_render_object_stamp = ui_render_object.create_stamp()
 
-        self.ui_render_object_stamp.render_zindex = ui_render_object.render_zindex
+        self.ui_render_object_stamp.render_zindex = ui_render_object.render_zindex + 1
 
         screen_rect: pygame.Rect = screen.get_rect()
 
@@ -264,22 +302,29 @@ class UIElement:
         ui_render_object.render_zindex += 1
 
         # Get style
-        style: dict = self.element.set_style(ui_render_object, self.classes, self.id, self.type, { "hover": self.is_mouse_in, "active": self.is_left_click_held })
+        style: dict = self.element.set_style(ui_render_object, self.classes, self.id, self.type, { "hover": self.is_hover, "active": self.is_active })
         padding: tuple[int, int, int, int] = self.__get_padding(style)
         margin: tuple[int, int, int, int] = self.__get_margin(style)
         border_radius: tuple[int, int, int, int] = self.__get_border_radius(style)
         self.position = style.get("position", "static")
-        scale: float = style.get("scale", 1)
+
+        parent_scale: float = children_data.get("scale", 1)
+        scale: float = style.get("scale", 1) * parent_scale
+
+        self.scale = scale
+        self.parent_scale = parent_scale
+
         offset: tuple[int, int, int, int] = self.__get_offset(style, self.position, scale)
         size: tuple[int, int] = self.__get_size(style)
         display: str = style.get("display", "block")
         visibility: str = style.get("visibility", "visible")
+        translate: tuple[int | str, int | str] = style.get("translate")
 
         if hasattr(self.element, "pre_render_font"):
-            self.element.pre_render_font(ui_render_object)
+            self.element.pre_render_font(ui_render_object, parent_scale)
         
         if hasattr(self.element, "pre_render_image"):
-            self.element.pre_render_image()
+            self.element.pre_render_image(parent_scale)
 
         if display == "none" or visibility == "hidden":
             return {}
@@ -295,11 +340,14 @@ class UIElement:
             self.display = Display.FLEX
         
         # Set element to new line
-        if (self.display == Display.BLOCK or self.display == Display.FLEX) and not self.position == "absolute":
+        if (self.display == Display.BLOCK or self.display == Display.FLEX):
             ui_render_object.render_line += 1
             ui_render_object.render_x = 0
             ui_render_object.render_y += ui_render_object.render_line_height
             ui_render_object.render_line_height = 0
+
+            if self.parent:
+                ui_render_object.render_x = self.parent.get_rendered_x()
 
         # Get element size
         element_width: int = self.element.get_width()
@@ -319,17 +367,33 @@ class UIElement:
 
         flex_position_x: int = children_data.get("render_x", -1)
         
-        # Get element position
-        position_x: int = self.__calc_x_position(ui_render_object, margin, padding, offset, screen_rect, element_width)
-        position_y: int = self.__calc_y_position(ui_render_object, margin, padding, offset, screen_rect, element_height)
-
         # Setup padding groups
         pad_horizontal: int = padding[1] + padding[3]
         pad_vertical: int = padding[0] + padding[2]
 
+        # Get element position
+        translate_x: int | str = translate[0]
+
+        if isinstance(translate_x, str):
+            if translate_x.endswith("%"):
+                translate_x = ((element_width + pad_horizontal) / 100) * float(translate_x[:len(translate_x) - 1])
+            else:
+                translate_x = 0
+        
+        translate_y: int | str = translate[1]
+
+        if isinstance(translate_y, str):
+            if translate_y.endswith("%"):
+                translate_y = ((element_height + pad_vertical) / 100) * float(translate_y[:len(translate_y) - 1])
+            else:
+                translate_y = 0
+
+        position_x: int = self.__calc_x_position(ui_render_object, margin, padding, offset, screen_rect, element_width) + translate_x
+        position_y: int = self.__calc_y_position(ui_render_object, margin, padding, offset, screen_rect, element_height) + translate_y
+
         # Change element position to make scale center
-        position_x -= int((element_width * scale - element_width) / 2) + int((pad_horizontal * scale - pad_horizontal) / 2)
-        position_y -= int((element_height * scale - element_height) / 2) + int((pad_vertical * scale - pad_vertical) / 2)
+        position_x -= int((element_width * (scale / parent_scale) - element_width) / 2) + int((pad_horizontal * (scale / parent_scale) - pad_horizontal) / 2)
+        position_y -= int((element_height * (scale / parent_scale) - element_height) / 2) + int((pad_vertical * (scale / parent_scale) - pad_vertical) / 2)
 
         # Update position for flex elements
         if flex_position_x >= 0:
@@ -347,8 +411,10 @@ class UIElement:
 
         self.ui_render_object_stamp.render_x = position_x
         self.ui_render_object_stamp.render_y = position_y
-        self.ui_render_object_stamp.width = element_width
-        self.ui_render_object_stamp.height = element_height
+        self.ui_render_object_stamp.width = self.actual_size_x
+        self.ui_render_object_stamp.height = self.actual_size_y
+        self.ui_render_object_stamp.pad_horizontal = pad_horizontal
+        self.ui_render_object_stamp.pad_vertical = pad_vertical
 
         # Render background for element
         if style["background-color"]:
@@ -399,6 +465,8 @@ class UIElement:
                 children_data["vertical_stretch_size"] = element_height
             
             children_data["render_x"] = position_x
+
+        children_data["scale"] = scale
 
         # Render sub elements
         for child in self.children:

@@ -17,6 +17,7 @@ class TextElement:
         self.font_weight = 400
         self.font_style = "normal"
         self.scale = 1
+        self.parent_scale = 1
 
         self.style_stamp = None
         self.time = 0
@@ -27,13 +28,13 @@ class TextElement:
         if not self.rect:
             return 0
         
-        return int(self.rect.height / self.scale)
+        return int(self.rect.height / (self.scale * self.parent_scale))
 
     def get_width(self) -> int:
         if not self.rect:
             return 0
         
-        return int(self.rect.width / self.scale)
+        return int(self.rect.width / (self.scale * self.parent_scale))
 
     def __get_font_family(self, font_family: str) -> str:
         if font_family.startswith("url("):
@@ -74,9 +75,11 @@ class TextElement:
 
         return self.style_stamp
     
-    def pre_render_font(self, ui_render_object: UIRenderObject) -> None:
+    def pre_render_font(self, ui_render_object: UIRenderObject, parent_scale: float) -> None:
         if not self.font:
             self.font = ui_render_object.font
+
+        self.parent_scale = parent_scale
 
         color: tuple = tuple(int(c) for c in self.color)
 
@@ -87,7 +90,7 @@ class TextElement:
         
         self.rect = self.surface.get_rect()
 
-        self.surface = pygame.transform.smoothscale(self.surface, (int(self.rect.width * self.scale), int(self.rect.height * self.scale)))
+        self.surface = pygame.transform.smoothscale(self.surface, (int(self.rect.width * self.scale * parent_scale), int(self.rect.height * self.scale * parent_scale)))
 
         self.rect = self.surface.get_rect()
 

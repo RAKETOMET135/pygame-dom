@@ -16,6 +16,7 @@ class ImageElement:
         self._width = -1
         self._height = -1
         self.scale = 1
+        self.parent_scale = 1
 
         self.style_stamp = None
         self.time = 0
@@ -34,13 +35,13 @@ class ImageElement:
         if not self.rect:
             return 0
         
-        return int(self.rect.height / self.scale)
+        return int(self.rect.height / (self.scale * self.parent_scale))
     
     def get_width(self) -> int:
         if not self.rect:
             return 0
         
-        return int(self.rect.width / self.scale)
+        return int(self.rect.width / (self.scale * self.parent_scale))
     
     def set_style(self, ui_render_object: UIRenderObject, classes: list[str], _id: str, _type: str, modifiers: dict) -> dict:
         if not ui_render_object:
@@ -99,12 +100,14 @@ class ImageElement:
         self._width = self.width
         self._height = self.height
 
-    def pre_render_image(self) -> None:
+    def pre_render_image(self, parent_scale: float) -> None:
         self.surface = get_image(self.path, int(self.width), int(self.height))
+
+        self.parent_scale = parent_scale
 
         self.rect = self.surface.get_rect()
 
-        self.surface = pygame.transform.smoothscale(self.surface, (round(self.rect.width * self.scale), round(self.rect.height * self.scale)))
+        self.surface = pygame.transform.smoothscale(self.surface, (round(self.rect.width * self.scale * parent_scale), round(self.rect.height * self.scale * parent_scale)))
 
         self.rect = self.surface.get_rect()
 

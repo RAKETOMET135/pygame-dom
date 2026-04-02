@@ -50,6 +50,8 @@ class UIPage:
         self.ui_render_object = UIRenderObject(self.font, None)
         self.style_sheet = None
         self.custom_cursor = None
+        self.hovered_elements = []
+        self.active_elements = []
 
     def style(self, css_file_path: str) -> None:
         """
@@ -150,10 +152,14 @@ class UIPage:
         
         return element
 
-    def __check_sub_elements(self, point: tuple[int, int], element: UIElement, affected_elements: list[UIElement], btn_down: bool, btn_up: bool, btn: int) -> None:
+    def __check_sub_elements(self, point: tuple[int, int], element: UIElement, affected_elements: list[UIElement], btn_down: bool, btn_up: bool, btn: int) -> bool:
+        hover: bool = False
+        
         for child in element.children:
             if self.__is_point_in_element(point, child):
                 affected_elements.append(child)
+
+                hover = True
 
                 if not child.is_mouse_in:
                     child.is_mouse_enter = True
@@ -184,7 +190,34 @@ class UIPage:
 
                     affected_elements.append(child)
 
-            self.__check_sub_elements(point, child, affected_elements, btn_down, btn_up, btn)  
+            is_hovered_element: bool =  self.__check_sub_elements(point, child, affected_elements, btn_down, btn_up, btn)
+
+            if is_hovered_element:
+                hover = True
+
+        return hover
+
+    def __propagate_hover_to_parent_elements(self, element: UIElement) -> None:
+        if not element.parent:
+            return
+        
+        if not element.parent in self.hovered_elements:
+            self.hovered_elements.append(element.parent)
+
+        element.parent.is_hover = True
+
+        self.__propagate_hover_to_parent_elements(element.parent)
+
+    def __propagate_active_to_parent_elements(self, element: UIElement) -> None:
+        if not element.parent:
+            return
+        
+        if not element.parent in self.active_elements:
+            self.active_elements.append(element.parent)
+        
+        element.parent.is_active = True
+
+        self.__propagate_active_to_parent_elements(element.parent)
 
     def render(self, screen: pygame.Surface, events: list[pygame.event.Event]) -> None:
         """
@@ -326,7 +359,10 @@ class UIPage:
 
                     affected_elements.append(instance)
             
-            self.__check_sub_elements(mouse_position, instance, affected_elements, btn_down, btn_up, btn)
+            is_hovered_element: bool = self.__check_sub_elements(mouse_position, instance, affected_elements, btn_down, btn_up, btn)
+
+            if is_hovered_element:
+                element_hovered = True
 
         root_event_element: UIElement = self.__get_top_element(affected_elements)
 
@@ -335,6 +371,12 @@ class UIPage:
             pygame.mouse.set_visible(True)
 
             self.custom_cursor = None
+
+            for el in self.hovered_elements:
+                el.is_hover = False
+            
+            for el in self.active_elements:
+                el.is_active = False
         else:
             if root_event_element.custom_cursor:
                 pygame.mouse.set_visible(False)
@@ -345,6 +387,27 @@ class UIPage:
                 pygame.mouse.set_visible(True)
 
                 self.custom_cursor = None
+            
+            for el in self.hovered_elements:
+                el.is_hover = False
+            
+            for el in self.active_elements:
+                el.is_active = False
+            
+            if not root_event_element in self.hovered_elements:
+                self.hovered_elements.append(root_event_element)
+            
+            root_event_element.is_hover = True
+
+            self.__propagate_hover_to_parent_elements(root_event_element)
+
+            if root_event_element.is_left_click_held:
+                if not root_event_element in self.active_elements:
+                    self.active_elements.append(root_event_element)
+                
+                root_event_element.is_active = True
+
+                self.__propagate_active_to_parent_elements(root_event_element)
 
         if self.custom_cursor:
             screen.blit(self.custom_cursor, mouse_position)

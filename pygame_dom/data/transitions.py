@@ -71,7 +71,8 @@ def handle_transition(new_style: dict, old_style: dict, delay_dict: dict, time: 
                 diff: float = new_style[key] - old_style[key]
 
                 old_style[key] = _transition_step(start_dict, current_time, key, diff, value, old_style[key], new_style[key])
-                
+            elif isinstance(item, str) and item.endswith("%"):
+                old_style[key] = str(_transition_step(start_dict, current_time, key, 0, value, float(old_style[key][:len(old_style[key]) - 1]), float(new_style[key][:len(new_style[key]) - 1]))) + "%"
             elif isinstance(item, tuple) and (all(isinstance(x, int) for x in item) or all(isinstance(x, float)) for x in item):
                 new_list: list = []
 
