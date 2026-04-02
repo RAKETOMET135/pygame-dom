@@ -119,44 +119,87 @@ class UIElement:
         
         return self.rendered_size_y
 
+    def __get_relative_width(self, screen: pygame.Surface) -> int:
+        if not self.parent:
+            return screen.get_width()
+
+        width: int = self.parent.get_rendered_size_x()
+
+        if width <= 0:
+            return screen.get_width()
+
+        return width
+
+    def __get_relative_height(self, screen: pygame.Surface) -> int:
+        if not self.parent:
+            return screen.get_height()
+        
+        height: int = self.parent.get_rendered_size_y()
+
+        if height <= 0:
+            return screen.get_height()
+        
+        return height
+
+    def __get_percent(self, percenter: Any, full: int | float) -> int | float:
+        if not isinstance(percenter, str):
+            return percenter
+        
+        if not percenter.endswith("%"):
+            return percenter
+        
+        return (full / 100) * float(percenter[:len(percenter) - 1])
+
     def __get_padding(self, style: dict, screen: pygame.Surface) -> tuple[int, int, int, int]:
         pad_left: int | str = style.get("padding-left", 0)
         pad_right: int | str = style.get("padding-right", 0)
         pad_top: int | str = style.get("padding-top", 0)
         pad_bottom: int | str = style.get("padding-bottom", 0)
 
-        width: int = 0
-        height: int = 0
+        width: int = self.__get_relative_width(screen)
+        height: int = self.__get_relative_height(screen)
 
-        if self.parent:
-            width = self.parent.get_rendered_size_x()
-            height = self.parent.get_rendered_size_y()
-
-        if width <= 0:
-            width = screen.get_width()
-        
-        if height <= 0:
-            height = screen.get_height()
-
-        if isinstance(pad_left, str) and pad_left.endswith("%"):
-            pad_left = (width / 100) * float(pad_left[:len(pad_left) - 1])
-        
-        if isinstance(pad_right, str) and pad_right.endswith("%"):
-            pad_right = (width / 100) * float(pad_right[:len(pad_right) - 1])
-
-        if isinstance(pad_top, str) and pad_top.endswith("%"):
-            pad_top = (height / 100) * float(pad_top[:len(pad_top) - 1])
-        
-        if isinstance(pad_bottom, str) and pad_bottom.endswith("%"):
-            pad_bottom = (height / 100) * float(pad_bottom[:len(pad_bottom) - 1])
+        pad_left = self.__get_percent(pad_left, width)
+        pad_right = self.__get_percent(pad_right, width)
+        pad_top = self.__get_percent(pad_top, height)
+        pad_bottom = self.__get_percent(pad_bottom, height)
 
         return (pad_top, pad_right, pad_bottom, pad_left)
 
-    def __get_margin(self, style: dict) -> tuple[int, int, int, int]:
-        return (style.get("margin-top", 0), style.get("margin-right", 0), style.get("margin-bottom", 0), style.get("margin-left", 0))
+    def __get_margin(self, style: dict, screen: pygame.Surface, position: str) -> tuple[int, int, int, int]:
+        if position == "absolute":
+            return (0, 0, 0, 0)
 
-    def __get_border_radius(self, style: dict) -> tuple[int, int, int, int]:
-        return (style.get("border-top-left-radius", 0), style.get("border-top-right-radius", 0), style.get("border-bottom-left-radius", 0), style.get("border-bottom-right-radius", 0))
+        mar_left: int | str = style.get("margin-left", 0)
+        mar_right: int | str = style.get("margin-right", 0)
+        mar_top: int | str = style.get("margin-top", 0)
+        mar_bottom: int | str = style.get("margin-bottom", 0)
+
+        width: int = self.__get_relative_width(screen)
+        height: int = self.__get_relative_height(screen)
+
+        mar_left = self.__get_percent(mar_left, width)
+        mar_right = self.__get_percent(mar_right, width)
+        mar_top = self.__get_percent(mar_top, height)
+        mar_bottom = self.__get_percent(mar_bottom, height)
+
+        return (mar_top, mar_right, mar_bottom, mar_left)
+
+    def __get_border_radius(self, style: dict, screen: pygame.Surface) -> tuple[int, int, int, int]:
+        br_top_left: int | str = style.get("border-top-left-radius", 0)
+        br_top_right: int | str = style.get("border-top-right-radius", 0)
+        br_bottom_left: int | str = style.get("border-bottom-left-radius", 0)
+        br_bottom_right: int | str = style.get("border-bottom-right-radius", 0)
+
+        width: int = self.__get_relative_width(screen)
+        height: int = self.__get_relative_height(screen)
+
+        br_top_left = self.__get_percent(br_top_left, (width + height) / 2)
+        br_top_right = self.__get_percent(br_top_right, (width + height) / 2)
+        br_bottom_left = self.__get_percent(br_bottom_left, (width + height) / 2)
+        br_bottom_right = self.__get_percent(br_bottom_right, (width + height) / 2)
+        
+        return (br_top_left, br_top_right, br_bottom_left, br_bottom_right)
 
     def __get_offset(self, style: dict, position: str, scale: float) -> tuple[int, int, int, int]:
         if position == "static":
@@ -333,10 +376,11 @@ class UIElement:
 
         # Get style
         style: dict = self.element.set_style(ui_render_object, self.classes, self.id, self.type, { "hover": self.is_hover, "active": self.is_active })
-        padding: tuple[int, int, int, int] = self.__get_padding(style, screen)
-        margin: tuple[int, int, int, int] = self.__get_margin(style)
-        border_radius: tuple[int, int, int, int] = self.__get_border_radius(style)
         self.position = style.get("position", "static")
+
+        padding: tuple[int, int, int, int] = self.__get_padding(style, screen)
+        margin: tuple[int, int, int, int] = self.__get_margin(style, screen, self.position)
+        border_radius: tuple[int, int, int, int] = self.__get_border_radius(style, screen)
 
         parent_scale: float = children_data.get("scale", 1)
         scale: float = style.get("scale", 1) * parent_scale

@@ -644,7 +644,18 @@ class StyleSheet:
         if len(pro_type) > 0:
             o_transition[pro_type] = [self.__get_time_unit_number(pro_duration), pro_ease, self.__get_time_unit_number(pro_delay)]
 
-        return o_transition
+        f_o_transition: dict = {}
+
+        for o_key, o_item in o_transition.items():
+            f_o_transition[o_key] = o_item
+
+            if o_key == "border-radius":
+                f_o_transition["border-top-left-radius"] = o_item
+                f_o_transition["border-top-right-radius"] = o_item
+                f_o_transition["border-bottom-left-radius"] = o_item
+                f_o_transition["border-bottom-right-radius"] = o_item
+
+        return f_o_transition
 
     def get_pygame_scale(self, scale: str) -> float:
         try:
