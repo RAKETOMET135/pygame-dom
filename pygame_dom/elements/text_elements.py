@@ -1,6 +1,7 @@
 from __future__ import annotations
 from pygame_dom.ui_render_object import UIRenderObject
 from pygame_dom.cache.cache import get_font
+from pygame_dom.data.transitions import handle_transition
 import pygame
 
 class TextElement:
@@ -16,6 +17,11 @@ class TextElement:
         self.font_weight = 400
         self.font_style = "normal"
         self.scale = 1
+
+        self.style_stamp = None
+        self.time = 0
+        self.delay_dict = {}
+        self.start_dict = {}
     
     def get_height(self) -> int:
         if not self.rect:
@@ -37,34 +43,44 @@ class TextElement:
 
         return font_family
 
-    def set_style(self, ui_render_object: UIRenderObject, classes: list[str], _id: str, type: str, modifiers: dict) -> dict:
+    def set_style(self, ui_render_object: UIRenderObject, classes: list[str], _id: str, _type: str, modifiers: dict) -> dict:
         if not ui_render_object:
             return {}
 
         if not ui_render_object.style_sheet:
             return {}
 
-        self.style = ui_render_object.style_sheet.get_style(type, classes, _id, modifiers)
+        self.style = ui_render_object.style_sheet.get_style(_type, classes, _id, modifiers)
+        self.transition = self.style.get("transition", {})
 
-        self.scale = self.style.get("scale", 1)
+        if not self.style_stamp:
+            self.style_stamp = self.style
+        else:
+            handle_transition(self.style, self.style_stamp, self.delay_dict, self.time, self.start_dict)
 
-        self.color = self.style["color"]
-        self.font_size = self.style["font-size"]
-        self.font_weight = self.style["font-weight"]
-        self.font_style = self.style["font-style"]
+        self.scale = self.style_stamp.get("scale", 1)
+
+        self.color = self.style_stamp["color"]
+        self.font_size = self.style_stamp["font-size"]
+        self.font_weight = self.style_stamp["font-weight"]
+        self.font_style = self.style_stamp["font-style"]
 
         is_bold: bool = self.font_weight >= 600
         is_italic: bool = self.font_style == "italic"
 
-        self.font = get_font(self.__get_font_family(self.style.get("font-family")), self.font_size, is_bold, is_italic)
+        self.font = get_font(self.__get_font_family(self.style_stamp.get("font-family")), self.font_size, is_bold, is_italic)
 
-        return self.style
+        self.time = pygame.time.get_ticks()
+
+        return self.style_stamp
     
     def pre_render_font(self, ui_render_object: UIRenderObject) -> None:
         if not self.font:
             self.font = ui_render_object.font
 
-        self.surface = self.font.render(self.text, True, self.color)
+        color: tuple = tuple(int(c) for c in self.color)
+
+        self.surface = self.font.render(self.text, True, color)
 
         if len(self.color) > 3:
             self.surface.set_alpha(self.color[3])

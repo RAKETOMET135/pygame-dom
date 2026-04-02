@@ -277,6 +277,9 @@ class UIElement:
 
         if hasattr(self.element, "pre_render_font"):
             self.element.pre_render_font(ui_render_object)
+        
+        if hasattr(self.element, "pre_render_image"):
+            self.element.pre_render_image()
 
         if display == "none" or visibility == "hidden":
             return {}
@@ -320,9 +323,13 @@ class UIElement:
         position_x: int = self.__calc_x_position(ui_render_object, margin, padding, offset, screen_rect, element_width)
         position_y: int = self.__calc_y_position(ui_render_object, margin, padding, offset, screen_rect, element_height)
 
+        # Setup padding groups
+        pad_horizontal: int = padding[1] + padding[3]
+        pad_vertical: int = padding[0] + padding[2]
+
         # Change element position to make scale center
-        position_x -= int((element_width * scale - element_width) / 2)
-        position_y -= int((element_height * scale - element_height) / 2)
+        position_x -= int((element_width * scale - element_width) / 2) + int((pad_horizontal * scale - pad_horizontal) / 2)
+        position_y -= int((element_height * scale - element_height) / 2) + int((pad_vertical * scale - pad_vertical) / 2)
 
         # Update position for flex elements
         if flex_position_x >= 0:
@@ -335,8 +342,8 @@ class UIElement:
         self.rendered_y = position_y
         self.rendered_size_x = element_width
         self.rendered_size_y = element_height
-        self.actual_size_x = int((element_width) * scale) + padding[1] + padding[3]
-        self.actual_size_y = int((element_height) * scale) + padding[0] + padding[2]
+        self.actual_size_x = int((element_width) * scale) + int(pad_horizontal * scale)
+        self.actual_size_y = int((element_height) * scale) + int(pad_vertical * scale)
 
         self.ui_render_object_stamp.render_x = position_x
         self.ui_render_object_stamp.render_y = position_y
@@ -346,20 +353,22 @@ class UIElement:
         # Render background for element
         if style["background-color"]:
             rect: tuple[int, int, int, int] = (
-                position_x,
-                position_y,
+                int(position_x),
+                int(position_y),
                 self.actual_size_x,
                 self.actual_size_y
             )
 
+            color: tuple = tuple(int(c) for c in style.get("background-color", (0, 0, 0, 0)))
+
             pygame.draw.rect(
                 screen, 
-                style["background-color"], 
+                color, 
                 rect, 
-                border_top_left_radius=border_radius[0], 
-                border_top_right_radius=border_radius[1],
-                border_bottom_left_radius=border_radius[2],
-                border_bottom_right_radius=border_radius[3]
+                border_top_left_radius=int(border_radius[0]), 
+                border_top_right_radius=int(border_radius[1]),
+                border_bottom_left_radius=int(border_radius[2]),
+                border_bottom_right_radius=int(border_radius[3])
             )
 
             #pygame.draw.rect(

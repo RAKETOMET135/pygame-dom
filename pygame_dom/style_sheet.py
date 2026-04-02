@@ -361,6 +361,8 @@ class StyleSheet:
                 style["visibility"] = self.get_pygame_visibility(style_rule.value)
             case "scale":
                 style["scale"] = self.get_pygame_scale(style_rule.value)
+            case "transition":
+                style["transition"] = self.get_pygame_transition(style_rule.value)
 
     def get_style(self, _type: str, classes: list[str], _id: str, modifiers: dict) -> dict:
         style: dict = {
@@ -395,7 +397,8 @@ class StyleSheet:
             "align-items": "stretch",
             "cursor": "default",
             "visibility": "visible",
-            "scale": 1
+            "scale": 1,
+            "transition": {}
         }
 
         for tag_style in self.default_style:
@@ -499,6 +502,111 @@ class StyleSheet:
             final.append(builded_word)
 
         return final
+
+    def __get_time_unit_number(self, unit_string: str) -> float:
+        if unit_string.endswith("ms"):
+            return float(unit_string[:len(unit_string) - 2])
+        elif unit_string.endswith("s"):
+            return float(unit_string[:len(unit_string) - 1]) * 1_000
+
+        return 0
+
+    def get_pygame_transition(self, transition: str) -> dict:
+        o_transition: dict = {}
+
+        pro_type: str = ""
+        pro_duration: str = ""
+        pro_ease: str = ""
+        pro_delay: str = ""
+
+        is_type: bool = False
+        is_dur: bool = False
+        is_del: bool = False
+        is_ease: bool = False
+
+        is_start: bool = False
+        skip_next: bool = False
+
+        for letter in transition:
+            if letter == ",":
+                o_transition[pro_type] = [self.__get_time_unit_number(pro_duration), pro_ease, self.__get_time_unit_number(pro_delay)]
+
+                pro_type = ""
+                pro_duration = ""
+                pro_ease = ""
+                pro_delay = ""
+
+                is_start = False
+                is_ease = False
+                is_del = False
+                is_dur = False
+                is_type = False
+
+                continue
+
+            if skip_next:
+                skip_next = False
+
+                continue
+
+            if letter.isalpha():
+                if is_dur and (letter == "s" or letter == "m"):
+                    pro_duration += letter
+
+                    if letter == "m":
+                        pro_duration += "s"
+
+                        skip_next = True
+                    
+                    is_start = True
+                    is_dur = False
+
+                    continue
+                elif is_del and (letter == "s" or letter == "m"):
+                    pro_delay += letter
+
+                    if letter == "m":
+                        pro_delay += "s"
+
+                        skip_next = True
+                    
+                    is_ease = True
+                    is_del = False
+                    
+                    continue
+                else:
+                    if is_start:
+                        is_ease = True
+                    else:
+                        is_type = True
+            
+            if letter.isdigit():
+                if is_type:
+                    is_type = False
+
+                    is_dur = True
+                
+                if is_start:
+                    is_del = True
+                
+                is_ease = False
+
+            if is_type:
+                pro_type += letter
+            
+            if is_dur:
+                pro_duration += letter
+            
+            if is_del:
+                pro_delay += letter
+            
+            if is_ease:
+                pro_ease += letter
+
+        if len(pro_type) > 0:
+            o_transition[pro_type] = [self.__get_time_unit_number(pro_duration), pro_ease, self.__get_time_unit_number(pro_delay)]
+
+        return o_transition
 
     def get_pygame_scale(self, scale: str) -> float:
         try:
