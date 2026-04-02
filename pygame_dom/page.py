@@ -104,7 +104,10 @@ class UIPage:
             case "img":
                 element_instance = IMG(element.get("src", ""))
             case "input":
-                element_instance = INPUT(element.get("placeholder", ""))
+                input_type: str = element.get("type", "text")
+
+                if input_type in ["text", "password", "number"]:
+                    element_instance = INPUT(element.get("placeholder", ""), input_type)
         
         ui_element: UIElement = UIElement(element_instance, element_type, parent)
         ui_element.set_classes(element.get("class") or [])

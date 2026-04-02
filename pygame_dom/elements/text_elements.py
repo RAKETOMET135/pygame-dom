@@ -146,7 +146,7 @@ class BUTTON(TextElement):
         super().__init__(text)
 
 class INPUT(TextElement):
-    def __init__(self, text: str) -> INPUT:
+    def __init__(self, text: str, input_type: str) -> INPUT:
         self.focus = False
         self.caret_position = 0
         self.caret = None
@@ -158,6 +158,9 @@ class INPUT(TextElement):
         self.padding = (0, 0, 0, 0)
         self.caret_timer = 0
         self.caret_visible = True
+        self.input_type = input_type
+        self.prev_text = ""
+        self.secret = ""
 
         self.select_mode = False
 
@@ -214,11 +217,41 @@ class INPUT(TextElement):
         if not copied_text:
             return
         
-        copied_text = copied_text.decode("utf-8")
+        if isinstance(copied_text, bytes):
+            try:
+                copied_text = copied_text.decode("utf-8")
+            except UnicodeDecodeError:
+                try:
+                    copied_text = copied_text.decode("utf-16")
+                except UnicodeDecodeError:
+                    copied_text = copied_text.decode("latin-1", errors="replace")
+        else:
+            return
+
         copied_text = copied_text.replace("\0", "")
 
+        if self.input_type == "number":
+            replace: str = ""
+
+            for letter in copied_text:
+                if not (letter.isdigit() or ((letter == "+" or letter == "-") and self.text.count("+") + self.text.count("-") + replace.count("-") + replace.count("+") < 2)):
+                    continue
+
+                replace += letter
+            
+            copied_text = replace
+
         if self.selection_start == -1 or self.selection_end == -1 or self.selection_start == self.selection_end:
-            self.text = self.text[:self.caret_position] + copied_text + self.text[self.caret_position:]
+            display_copied_text: str = copied_text
+
+            if self.input_type == "password":
+                display_copied_text = ""
+
+                for _ in range(len(copied_text)):
+                    display_copied_text += "*"
+
+            self.text = self.text[:self.caret_position] + display_copied_text + self.text[self.caret_position:]
+            self.secret = self.secret[:self.caret_position] + copied_text + self.secret[self.caret_position:]
             self.caret_position += len(copied_text)
 
             self.selection_start = self.caret_position
@@ -228,6 +261,7 @@ class INPUT(TextElement):
             end: int = max(self.selection_start, self.selection_end)
 
             self.text = self.text[:start] + copied_text + self.text[end:]
+            self.secret = self.secret[:start] + copied_text + self.secret[end:]
             self.caret_position = start + len(copied_text)
             self.selection_start = self.selection_end = -1
 
@@ -340,12 +374,27 @@ class INPUT(TextElement):
                 self.write_character(event_attrs.get("unicode", ""))
 
     def write_character(self, char: str) -> None:
+        if self.input_type == "number":
+            if not (char.isdigit() or ((char == "+" or char == "-") and self.text.count("+") + self.text.count("-") < 2)):
+                return
+
         if not (self.selection_start == -1 or self.selection_end == -1 or self.selection_start == self.selection_end):
             self.remove_character()
 
+        display_char: str = char
+
+        if self.input_type == "password":
+            display_char = "*"
+
         self.text = self.text[
             :self.caret_position
-        ] + char + self.text[
+        ] + display_char + self.text[
+            self.caret_position:
+        ]
+
+        self.secret = self.secret[
+            :self.caret_position
+        ] + char + self.secret[
             self.caret_position:
         ]
 
@@ -363,6 +412,12 @@ class INPUT(TextElement):
                     self.caret_position:
                 ]
 
+                self.secret = self.secret[
+                    :self.caret_position - 1
+                ] + self.secret[
+                    self.caret_position:
+                ]
+
                 self.caret_position -= 1
             
             self.selection_start = self.caret_position
@@ -372,6 +427,7 @@ class INPUT(TextElement):
             end: int = max(self.selection_start, self.selection_end)
 
             self.text = self.text[:start] + self.text[end:]
+            self.secret = self.secret[:start] + self.secret[end:]
             self.caret_position = start
             self.selection_start = self.selection_end = -1
 
