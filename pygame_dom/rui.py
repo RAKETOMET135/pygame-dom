@@ -8,6 +8,9 @@ import pygame
 
 FUNCTION_REGISTRY: dict = {}
 
+def setup() -> None:
+    pygame.scrap.init()
+
 class RUI:
     def __init__(self) -> RUI:
         pass

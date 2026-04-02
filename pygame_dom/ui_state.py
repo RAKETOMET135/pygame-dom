@@ -152,6 +152,9 @@ class UIStateParser:
             ui_element.element.set_image_path(new_text)
 
     def parse_text(self, text: str, ui_element: UIElement) -> None:
+        if ui_element.type == "input":
+            return
+
         element_states: list[UIStateInstance] = []
 
         is_state: bool = False

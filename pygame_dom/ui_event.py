@@ -10,6 +10,7 @@ class UIEvent:
         self.button = None
         self.delta_x = None
         self.delta_y = None
+        self.unicode = None
 
         self.propagation = True
     

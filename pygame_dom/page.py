@@ -52,6 +52,9 @@ class UIPage:
         self.custom_cursor = None
         self.hovered_elements = []
         self.active_elements = []
+        self.focused_element = None
+        self.active_keys = {}
+        self.prev_input_active_time = 0
 
     def style(self, css_file_path: str) -> None:
         """
@@ -100,6 +103,8 @@ class UIPage:
                 element_instance = BUTTON(element_text)
             case "img":
                 element_instance = IMG(element.get("src", ""))
+            case "input":
+                element_instance = INPUT(element.get("placeholder", ""))
         
         ui_element: UIElement = UIElement(element_instance, element_type, parent)
         ui_element.set_classes(element.get("class") or [])
@@ -309,10 +314,15 @@ class UIPage:
                     created_event_attrs.append({"button": 3})
             elif event.type == pygame.KEYDOWN:
                 created_events.append("keydown")
-                created_event_attrs.append({"key": event.key})
+                created_event_attrs.append({"key": event.key, "unicode": event.unicode})
+
+                self.active_keys[event.key] = {"unicode": event.unicode, "press_time": pygame.time.get_ticks()}
             elif event.type == pygame.KEYUP:
                 created_events.append("keyup")
-                created_event_attrs.append({"key": event.key})
+                created_event_attrs.append({"key": event.key, "unicode": event.unicode})
+
+                if event.key in self.active_keys:
+                    del self.active_keys[event.key]
             elif event.type == pygame.MOUSEWHEEL:
                 created_events.append("mousewheel")
                 created_event_attrs.append({"delta_x": event.x, "delta_y": event.y})
@@ -414,6 +424,15 @@ class UIPage:
 
         current_event: UIEvent | None = None
 
+        if "leftmousedown" in created_events and not root_event_element:
+            if self.focused_element:
+                self.focused_element.element.focus = False
+
+                if hasattr(self.focused_element.element, "reset_selection"):
+                    self.focused_element.element.reset_selection()
+
+                self.focused_element = None
+
         if root_event_element:
             click_delay: int = pygame.time.get_ticks() - root_event_element.last_click_time
 
@@ -449,7 +468,33 @@ class UIPage:
                     current_event.button = event_attrs.get("button")
                     current_event.delta_x = event_attrs.get("delta_x")
                     current_event.delta_y = event_attrs.get("delta_y")
+                    current_event.unicode = event_attrs.get("unicode")
+
+                # system events (like input lmb down)
+                if created_event == "leftmousedown" and hasattr(root_event_element.element, "focus"):
+                    if self.focused_element:
+                        self.focused_element.element.focus = False
+
+                    self.focused_element = root_event_element
+
+                    root_event_element.element.focus = True
+
+                    if hasattr(self.focused_element.element, "click_to_select_caret_position"):
+                        self.focused_element.element.click_to_select_caret_position(mouse_position)
+                elif created_event == "leftmousedown":
+                    if self.focused_element:
+                        self.focused_element.element.focus = False
+
+                        if hasattr(self.focused_element.element, "reset_selection"):
+                            self.focused_element.element.reset_selection()
+
+                        self.focused_element = None
 
                 handled_events.append(current_event)
 
                 root_event_element.on_event(current_event)
+        
+        # typing + backspace and arrow key movement
+        if self.focused_element and hasattr(self.focused_element.element, "handle_input"):
+            self.focused_element.element.handle_input(self.active_keys, created_events, created_event_attrs)
+            self.focused_element.element.handle_selection(mouse_position, "leftmousedown" in created_events, "mousemove" in created_events, "leftmouseup" in created_events, (self.focused_element.rendered_x, self.focused_element.rendered_y, self.focused_element.actual_size_x, self.focused_element.actual_size_y))

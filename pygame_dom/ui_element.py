@@ -375,7 +375,12 @@ class UIElement:
         ui_render_object.render_zindex += 1
 
         # Get style
-        style: dict = self.element.set_style(ui_render_object, self.classes, self.id, self.type, { "hover": self.is_hover, "active": self.is_active })
+        is_focused: bool = False
+
+        if hasattr(self.element, "focus"):
+            is_focused = self.element.focus
+
+        style: dict = self.element.set_style(ui_render_object, self.classes, self.id, self.type, { "hover": self.is_hover, "active": self.is_active, "focus": is_focused })
         self.position = style.get("position", "static")
 
         padding: tuple[int, int, int, int] = self.__get_padding(style, screen)

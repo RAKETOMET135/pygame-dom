@@ -654,6 +654,16 @@ class StyleSheet:
                 f_o_transition["border-top-right-radius"] = o_item
                 f_o_transition["border-bottom-left-radius"] = o_item
                 f_o_transition["border-bottom-right-radius"] = o_item
+            elif o_key == "padding":
+                f_o_transition["padding-bottom"] = o_item
+                f_o_transition["padding-top"] = o_item
+                f_o_transition["padding-left"] = o_item
+                f_o_transition["padding-right"] = o_item
+            elif o_key == "margin":
+                f_o_transition["margin-bottom"] = o_item
+                f_o_transition["margin-top"] = o_item
+                f_o_transition["margin-left"] = o_item
+                f_o_transition["margin-right"] = o_item
 
         return f_o_transition
 
