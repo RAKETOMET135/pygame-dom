@@ -60,6 +60,24 @@ class StyleSheet:
 
         self.parser(css_content)
 
+    def load_another_css(self, another_css_file_path: str) -> None:
+        is_file_loaded: bool = False
+        css_content: str = ""
+
+        try:
+            with open(another_css_file_path, "r") as file:
+                css_content = file.read()
+                is_file_loaded = True
+        except:
+            print(f"Could not open CSS file on path: {another_css_file_path}")
+        
+        if not is_file_loaded:
+            return
+        
+        css_content = self.__polish_css_string(css_content)
+
+        self.parser(css_content)
+
     def __load_default_css(self) -> None:
         try:
             with resources.open_text("pygame_dom.style", "default.css") as file:

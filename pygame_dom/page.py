@@ -64,6 +64,11 @@ class UIPage:
             css_file_path (str): Path to CSS file
         """
 
+        if self.style_sheet:
+            self.style_sheet.load_another_css(css_file_path)
+
+            return
+
         self.style_sheet = StyleSheet(css_file_path)
         self.ui_render_object.style_sheet = self.style_sheet
 

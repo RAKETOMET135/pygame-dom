@@ -1,0 +1,349 @@
+{
+    "header": "Supported CSS properties",
+    "content": [
+        {
+            "type": "text",
+            "text": "Pygame-dom supports only some CSS properties. You can view the supported properties in the list below."
+        },
+        {
+            "type": "subheader",
+            "text": "Typography"
+        },
+        {
+            "type": "text",
+            "text": "These properties control the text visuals in the elements."
+        },
+        {
+            "type": "subsubheader",
+            "text": "Color"
+        },
+        {
+            "type": "text",
+            "text": "You can use this property to change the text's color. Color supports <span class='param'>CSS color names</span>, <span class='param'>rgb</span>, <span class='param'>rgba</span> and <span class='param'>hex</span>."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>color</span>"
+        },
+        {
+            "type": "subsubheader",
+            "text": "Font family"
+        },
+        {
+            "type": "text",
+            "text": "You can use this property to change the text's font. You can use system font names supported by pygame or you can use url to link a font file (<span class='param'>url(\"font.ttf\")</span>)."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>font-family</span>"
+        },
+        {
+            "type": "subsubheader",
+            "text": "Font size"
+        },
+        {
+            "type": "text",
+            "text": "You can use this property to change the text's size. This property only supports pixels (<span class='param'>px</span>)."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>font-size</span>"
+        },
+        {
+            "type": "subsubheader",
+            "text": "Font weight"
+        },
+        {
+            "type": "text",
+            "text": "You can use this property to change the text's font weight. This property only supports <span class='param'>normal</span> and <span class='param'>bold</span> weight. All other weights are mapped to these."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>font-weight</span>"
+        },
+        {
+            "type": "subsubheader",
+            "text": "Font style"
+        },
+        {
+            "type": "text",
+            "text": "You can use this property to change the text's style. This property only supports <span class='param'>normal</span> and <span class='param'>italic.</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>font-style</span>"
+        },
+        {
+            "type": "subsubheader",
+            "text": "Text align"
+        },
+        {
+            "type": "text",
+            "text": "You can use this property to change the text's horizontal alignment. Supported alignments are <span class='param'>left</span>, <span class='param'>center</span> and <span class='param'>right</span>."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>text-align</span>"
+        },
+        {
+            "type": "subheader",
+            "text": "Visual"
+        },
+        {
+            "type": "text",
+            "text": "These properties control the element's visuals."
+        },
+        {
+            "type": "subsubheader",
+            "text": "Background color"
+        },
+        {
+            "type": "text",
+            "text": "You can use this property to change the element's background color. Background color supports <span class='param'>CSS color names</span>, <span class='param'>rgb</span>, <span class='param'>rgba</span> and <span class='param'>hex</span>."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>background-color</span>"
+        },
+        {
+            "type": "subsubheader",
+            "text": "Visibility"
+        },
+        {
+            "type": "text",
+            "text": "You can use this property to hide the element. This property supports <span class='param'>visible</span> and <span class='param'>hidden</span>."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>visibility</span>"
+        },
+        {
+            "type": "subsubheader",
+            "text": "Cursor"
+        },
+        {
+            "type": "text",
+            "text": "You can use this property to change the cursor when the element is hovered. You can use <span class='param'>default</span>, <span class='param'>pointer</span>, <span class='param'>text</span>, <span class='param'>wait</span>, <span class='param'>crosshair</span> and <span class='param'>move</span> or you can use url to link a custom image file (<span class='param'>url(\"cursor.png\")</span>)."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>cursor</span>"
+        },
+        {
+            "type": "subsubheader",
+            "text": "Border radius"
+        },
+        {
+            "type": "text",
+            "text": "You can use this property to set element's border radius. You can use pixels (<span class='param'>px</span>) and <span class='param'>%</span>."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>border-radius</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>border-top-left-radius</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>border-top-right-radius</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>border-bottom-left-radius</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>border-bottom-right-radius</span>"
+        },
+        {
+            "type": "subsubheader",
+            "text": "Width"
+        },
+        {
+            "type": "text",
+            "text": "You can use this property to set the element's width. You can use pixels (<span class='param'>px</span>) and <span class='param'>%</span>."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>width</span>"
+        },
+        {
+            "type": "subsubheader",
+            "text": "Height"
+        },
+        {
+            "type": "text",
+            "text": "You can use this property to set element's height. You can use pixels (<span class='param'>px</span>) and <span class='param'>%</span>."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>height</span>"
+        },
+        {
+            "type": "subheader",
+            "text": "Spacing"
+        },
+        {
+            "type": "text",
+            "text": "These properties control the element's spacing."
+        },
+        {
+            "type": "subsubheader",
+            "text": "Padding"
+        },
+        {
+            "type": "text",
+            "text": "You can use this property to add space in between the element's side and the element's content. You can use pixels (<span class='param'>px</span>) and <span class='param'>%</span>."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>padding</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>padding-top</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>padding-right</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>padding-bottom</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>padding-left</span>"
+        },
+        {
+            "type": "subsubheader",
+            "text": "Margin"
+        },
+        {
+            "type": "text",
+            "text": "You can use this property to add space in between the element and other elements. You can use pixels (<span class='param'>px</span>) and <span class='param'>%</span>."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>margin</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>margin-top</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>margin-right</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>margin-bottom</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>margin-left</span>"
+        },
+        {
+            "type": "subheader",
+            "text": "Layout"
+        },
+        {
+            "type": "text",
+            "text": "These properties control the element's positioning."
+        },
+        {
+            "type": "subsubheader",
+            "text": "Position"
+        },
+        {
+            "type": "text",
+            "text": "You can use this property to set different element position modes. This property supports <span class='param'>static</span>, <span class='param'>relative</span> and <span class='param'>absolute</span>."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>position</span>"
+        },
+        {
+            "type": "subsubheader",
+            "text": "Side positions"
+        },
+        {
+            "type": "text",
+            "text": "You can use these properties to position the element based on the position property. These properties support pixels (<span class='param'>px</span>) and <span class='param'>%</span>."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>top</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>right</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>bottom</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>left</span>"
+        },
+        {
+            "type": "subsubheader",
+            "text": "Display"
+        },
+        {
+            "type": "text",
+            "text": "You can use this property to change the element's layout style. This property supports <span class='param'>block</span>, <span class='param'>inline</span> and <span class='param'>none</span>."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>display</span>"
+        },
+        {
+            "type": "subheader",
+            "text": "Transform"
+        },
+        {
+            "type": "text",
+            "text": "These properties control the element's transform."
+        },
+        {
+            "type": "subsubheader",
+            "text": "Translate"
+        },
+        {
+            "type": "text",
+            "text": "You can use this property to change the element's position with pixels (<span class='param'>px</span>) or by percentage of the element's size with <span class='param'>%</span>."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>translate</span>"
+        },
+        {
+            "type": "subsubheader",
+            "text": "Transition"
+        },
+        {
+            "type": "text",
+            "text": "You can use this property to allow transitions for other properties. Only number and color transitions are supported. This property supports seconds (<span class='param'>s</span>) and miliseconds (<span class='param'>ms</span>)."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>transition</span>"
+        },
+        {
+            "type": "subsubheader",
+            "text": "Scale (experimental)"
+        },
+        {
+            "type": "text",
+            "text": "You can use this property to scale elements around their center. This property does not properly work with nested elements."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>scale</span>"
+        }
+    ]
+}

@@ -82,7 +82,7 @@
         },
         {
             "type": "text",
-            "text": "<span style='color: red'>It is important to use pygame.event.get() only ones in the pygame's gameloop. Pygame's pygame.event.get() returns the events and it also removes them from the occured events list.<span>"
+            "text": "<span style='color: red'>It is important to use pygame.event.get() only once in the pygame's gameloop. Pygame's pygame.event.get() returns the events and it also removes them from the occured events list.<span>"
         }
     ]
 }

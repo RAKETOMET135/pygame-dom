@@ -34,11 +34,27 @@ function loadSection(sectionData) {
                 sectionContent.append(textElement)
 
                 break
+            case "text-margin":
+                const textElementMargin = document.createElement("p")
+                textElementMargin.innerHTML = item.text
+                textElementMargin.style.marginBottom = "0.8vw"
+                textElementMargin.style.marginTop = "0.8vw"
+
+                sectionContent.append(textElementMargin)
+
+                break
             case "subheader":
                 const headerTextElement = document.createElement("h3")
                 headerTextElement.innerHTML = item.text
 
                 sectionContent.append(headerTextElement)
+
+                break
+            case "subsubheader":
+                const headerSubTextElement = document.createElement("h4")
+                headerSubTextElement.innerHTML = item.text
+
+                sectionContent.append(headerSubTextElement)
 
                 break
             case "code":
@@ -64,6 +80,11 @@ function loadSection(sectionData) {
         }
         
     }
+
+    const footer = document.createElement("div")
+    footer.classList.add("footer")
+
+    sectionContent.append(footer)
 }
 
 function main() {

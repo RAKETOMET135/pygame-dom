@@ -1,0 +1,43 @@
+{
+    "header": "HTML intro",
+    "content": [
+        {
+            "type": "text",
+            "text": "Pygame-dom uses HTML files to create pages. Files don't have any &lt;html&gt;, &lt;head&gt; and &lt;body&gt; tags. You can simply write the HTML tags you want the page to include."
+        },
+        {
+            "type": "text",
+            "text": "Example below shows the use of some supported HTML elements:"
+        },
+        {
+            "type": "code",
+            "lang": "HTML",
+            "filename": "page.html",
+            "header_color": "orange",
+            "code": [
+                "<span class='keyw'>&lt;h1&gt;</span><span class='text'>Example header</span><span class='keyw'>&lt;/h1&gt;</span>",
+                "",
+                "<span class='keyw'>&lt;button&gt;</span><span class='text'>Example button</span><span class='keyw'>&lt;/button&gt;</span>",
+                "",
+                "<span class='keyw'>&lt;img</span> <span class='val'>src</span>=\"<span class='param'>image.png</span>\"<span class='keyw'>&gt;</span>"
+            ]
+        },
+        {
+            "type": "text",
+            "text": "Every HTML file can be used for multiple pages. All HTML elements support class and id attributes that can be used for styling."
+        },
+        {
+            "type": "text",
+            "text": "Example below shows how to create a page using a HTML file:"
+        },
+        {
+            "type": "code",
+            "lang": "python",
+            "filename": "app.py",
+            "header_color": "cornflowerblue",
+            "code": [
+                "page: <span class='class'>UIPage</span> = <span class='class'>DOM</span>.<span class='func'>create_ui_page</span><span class='paren'>(</span><span class='str'>\"page.html\"</span><span class='paren'>)</span>"
+            ]
+        }
+    ]
+}

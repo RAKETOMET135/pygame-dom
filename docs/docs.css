@@ -7,6 +7,15 @@
 body {
     background-color: rgb(11, 11, 11);
 }
+body::-webkit-scrollbar {
+    width: 10px;
+}
+body::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+body::-webkit-scrollbar-thumb {
+    background-color: white;
+}
 
 header {
     background-color: rgb(50, 50, 50);
@@ -80,7 +89,6 @@ main {
     height: 100%;
     top: 0;
     transition: all 0.15s;
-    padding-bottom: 50vw;
 }
 
 .content > h1 {
@@ -109,6 +117,15 @@ main {
     font-family: var(--font);
     margin-left: 2vw;
     margin-top: 4vw;
+}
+
+.content > h4 {
+    color: white;
+    font-size: 1.4vw;
+    font-family: var(--font);
+    margin-left: 2vw;
+    margin-top: 2vw;
+    font-style: italic;
 }
 
 .content > div.code-block {
@@ -152,21 +169,22 @@ main {
     min-height: 1.2vw;
     white-space: pre;
     tab-size: 3vw;
-
+}
+.content > div.code-block > h2, .content > p {
     .import {
         color: purple;
     }
     .class {
-        color: green;
+        color: rgb(6, 179, 6);
     }
     .func {
         color: rgb(207, 112, 216);
     }
     .keyw {
-        color: rgb(27, 27, 148);
+        color: rgb(117, 117, 223);
     }
     .val {
-        color: rgb(37, 37, 224);
+        color: rgb(96, 96, 212);
     }
     .paren {
         color: yellow;
@@ -180,4 +198,15 @@ main {
     .num {
         color: rgb(150, 247, 5);
     }
+    .text {
+        color: rgb(238, 238, 238);
+    }
+    .css {
+        color: goldenrod;
+    }
+}
+
+.footer {
+    height: 5vw;
+    width: 100%;
 }

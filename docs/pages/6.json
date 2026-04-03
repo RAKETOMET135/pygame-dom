@@ -1,0 +1,45 @@
+{
+    "header": "Supported CSS pseudo-classes",
+    "content": [
+        {
+            "type": "text",
+            "text": "Pygame-dom support of pseudo-classes is limited but you can use the basic state pseudo-classes listed below."
+        },
+        {
+            "type": "subheader",
+            "text": "Hover state pseudo-class"
+        },
+        {
+            "type": "text",
+            "text": "You can use hover to define special styles for elements when they are hovered."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='css'>:hover</span>"
+        },
+        {
+            "type": "subheader",
+            "text": "Active state pseudo-class"
+        },
+        {
+            "type": "text",
+            "text": "You can use active to define special styles for elements when they are being clicked."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='css'>:active</span>"
+        },
+        {
+            "type": "subheader",
+            "text": "Focus state pseudo-class"
+        },
+        {
+            "type": "text",
+            "text": "You can use focus to define special styles for input elements when they are clicked into."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='css'>:focus</span>"
+        }
+    ]
+}

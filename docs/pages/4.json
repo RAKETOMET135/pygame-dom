@@ -1,0 +1,40 @@
+{
+    "header": "CSS intro",
+    "content": [
+        {
+            "type": "text",
+            "text": "Pygame-dom uses CSS files to style created elements on pages. CSS selector support is limited and only the most basic selectors are provided."
+        },
+        {
+            "type": "text",
+            "text": "Example below shows a simple styling for button elements:"
+        },
+        {
+            "type": "code",
+            "lang": "CSS",
+            "filename": "page.css",
+            "header_color": "lightblue",
+            "code": [
+                "<span class='css'>button</span> <span class='paren'>{</span>",
+                "\t<span class='val'>color</span>: <span class='param'>white</span>;",
+                "\t<span class='val'>background-color</span>: <span class='param'>limegreen</span>;",
+                "\t<span class='val'>font-size</span>: <span class='num'>25px</span>;",
+                "\t<span class='val'>padding</span>: <span class='num'>10px 20px</span>;",
+                "<span class='paren'>}</span>"
+            ]
+        },
+        {
+            "type": "text",
+            "text": "You can load multiple CSS files onto one page. You can imagine loading multiple CSS files like one long file that every load adds the new content to the end of the file."
+        },
+        {
+            "type": "code",
+            "lang": "python",
+            "filename": "app.py",
+            "header_color": "cornflowerblue",
+            "code": [
+                "page.<span class='func'>style</span><span class='paren'>(</span><span class='str'>\"page.css\"</span><span class='paren'>)</span>"
+            ]
+        }
+    ]
+}

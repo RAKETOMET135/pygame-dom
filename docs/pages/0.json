@@ -50,7 +50,7 @@
                 "\t<span class='class'>pygame</span>.<span class='func'>quit</span><span class='paren'>()</span>",
                 "",
                 "<span class='import'>if</span> __name__ == <span class='str'>\"__main__\"</span>:",
-                "\t<span class='class'>main</span><span class='func'>()</span>"
+                "\t<span class='func'>main</span><span class='paren'>()</span>"
             ]
         }
     ]

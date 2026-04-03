@@ -1,0 +1,104 @@
+{
+    "header": "Supported HTML elements",
+    "content": [
+        {
+            "type": "text",
+            "text": "Pygame-dom only supports some HTML elements. All elements featured on this list are supported and their features are also listed."
+        },
+        {
+            "type": "subheader",
+            "text": "Heading elements"
+        },
+        {
+            "type": "text",
+            "text": "Every heading element provides a different font-size based on the number with 1 being the largest."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='keyw'>&lt;h1&gt;&lt;/h1&gt;</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='keyw'>&lt;h2&gt;&lt;/h2&gt;</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='keyw'>&lt;h3&gt;&lt;/h3&gt;</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='keyw'>&lt;h4&gt;&lt;/h4&gt;</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='keyw'>&lt;h5&gt;&lt;/h5&gt;</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='keyw'>&lt;h6&gt;&lt;/h6&gt;</span>"
+        },
+        {
+            "type": "subheader",
+            "text": "Paragraph element"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='keyw'>&lt;p&gt;&lt;/p&gt;</span>"
+        },
+        {
+            "type": "subheader",
+            "text": "Button element"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='keyw'>&lt;button&gt;&lt;/button&gt;</span>"
+        },
+        {
+            "type": "subheader",
+            "text": "Image element"
+        },
+        {
+            "type": "text",
+            "text": "You can set the image file path using the src attribute (<span class='param'>src=\"images/image.png\"</span>)."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='keyw'>&lt;img&gt;</span>"
+        },
+        {
+            "type": "subheader",
+            "text": "Container elements"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='keyw'>&lt;div&gt;&lt;/div&gt;</span>"
+        },
+        {
+            "type": "subheader",
+            "text": "Input element"
+        },
+        {
+            "type": "text",
+            "text": "You can set the input type using the type attribute (<span class='param'>type=\"text\"</span>). Currently only <span class='param'>text</span>, <span class='param'>password</span>, <span class='param'>number</span>, <span class='param'>radio</span> and <span class='param'>checkbox</span> input types are supported."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='keyw'>&lt;input&gt;</span>"
+        },
+        {
+            "type": "text",
+            "text": "Radio inputs support linking when you use the name attribute with the same value:"
+        },
+        {
+            "type": "code",
+            "lang": "HTML",
+            "filename": "page.html",
+            "header_color": "orange",
+            "code": [
+                "<span class='keyw'>&lt;input</span> <span class='val'>type</span>=\"<span class='param'>radio</span>\" <span class='val'>name</span>=\"<span class='param'>option</span>\"<span class='keyw'>&gt;</span>",
+                "",
+                "<span class='keyw'>&lt;input</span> <span class='val'>type</span>=\"<span class='param'>radio</span>\" <span class='val'>name</span>=\"<span class='param'>option</span>\"<span class='keyw'>&gt;</span>"
+            ]
+        }
+    ]
+}

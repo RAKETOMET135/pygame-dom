@@ -1,0 +1,57 @@
+{
+    "header": "Supported CSS selectors",
+    "content": [
+        {
+            "type": "text",
+            "text": "Pygame-dom supports only the basic CSS selectors. You can not use any advanced CSS selectors."
+        },
+        {
+            "type": "subheader",
+            "text": "Global selector"
+        },
+        {
+            "type": "text",
+            "text": "You can select all HTML elements using this selector. It also has the lowest weight and is easily overwritten by other selectors."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='keyw'>*</span>"
+        },
+        {
+            "type": "subheader",
+            "text": "Tag selectors"
+        },
+        {
+            "type": "text",
+            "text": "You can select all HTML elements of one type using this selector. It has the second lowest weight from all the selectors."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='css'>h1</span>, <span class='css'>h2</span>, <span class='css'>h3</span>, <span class='css'>h4</span>, <span class='css'>h5</span>, <span class='css'>h6</span>, <span class='css'>p</span>, <span class='css'>button</span>, <span class='css'>img</span>, <span class='css'>div</span>, <span class='css'>input</span>"
+        },
+        {
+            "type": "subheader",
+            "text": "Class selector"
+        },
+        {
+            "type": "text",
+            "text": "You can select all HTML elements of the same class using this selector. To use this selector simply write '.' and the class name. This selector has the third lowest weight from all the selectors."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='css'>.classname</span>"
+        },
+        {
+            "type": "subheader",
+            "text": "Id selector"
+        },
+        {
+            "type": "text",
+            "text": "Unlike in normal CSS you can select all HTML elements with the same id. You can create multiple elements with the same id. To use this selector simply write '#' and the id. This selector has the fourth lowest weight from all the selectors."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='css'>#id</span>"
+        }
+    ]
+}
