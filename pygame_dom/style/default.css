@@ -74,7 +74,6 @@ input {
     color: black;
     font-size: 20px;
     padding: 1px 6px;
-    cursor: text;
 }
 input:focus {
     background-color: rgb(200, 200, 200);

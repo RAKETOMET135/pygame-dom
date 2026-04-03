@@ -465,6 +465,19 @@ class UIElement:
         else:
             if size[1] > 0:
                 element_height = size[1]
+        
+         # Check if render background (checkbox and radio dont have bakground)
+        render_background: bool = True
+
+        if hasattr(self.element, "input_type") and self.element.input_type in ["radio", "checkbox"]:
+            render_background = False
+
+            # Make default height for the inputs
+            if element_width < 20:
+                element_width = 20
+            
+            if element_height < 20:
+                element_height = 20
 
         # Update elements using flex data
         flex_vertical_stretch: bool = children_data.get("vertical_stretch", False)
@@ -524,7 +537,7 @@ class UIElement:
         self.ui_render_object_stamp.pad_vertical = pad_vertical
 
         # Render background for element
-        if style["background-color"]:
+        if style["background-color"] and render_background:
             rect: tuple[int, int, int, int] = (
                 int(position_x),
                 int(position_y),

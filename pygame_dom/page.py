@@ -108,6 +108,8 @@ class UIPage:
 
                 if input_type in ["text", "password", "number"]:
                     element_instance = INPUT(element.get("placeholder", ""), input_type)
+                elif input_type in ["checkbox", "radio"]:
+                    element_instance = INPUT_BUTTON(input_type, element.get("name", ""))
         
         ui_element: UIElement = UIElement(element_instance, element_type, parent)
         ui_element.set_classes(element.get("class") or [])
@@ -437,6 +439,9 @@ class UIPage:
                 self.focused_element = None
 
         if root_event_element:
+            if hasattr(root_event_element.element, "check") and "leftmousedown" in created_events:
+                root_event_element.element.check()
+
             click_delay: int = pygame.time.get_ticks() - root_event_element.last_click_time
 
             i: int = -1

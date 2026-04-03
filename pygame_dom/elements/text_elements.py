@@ -1,6 +1,7 @@
 from __future__ import annotations
 from pygame_dom.ui_render_object import UIRenderObject
 from pygame_dom.cache.cache import get_font
+from pygame_dom.cache.registry import add_radio_input, get_radio_inputs, get_framework_image
 from pygame_dom.data.transitions import handle_transition
 import pygame
 
@@ -18,6 +19,8 @@ class TextElement:
         self.font_style = "normal"
         self.scale = 1
         self.parent_scale = 1
+        self.text_align = "left"
+        self.y_align = "top"
 
         self.style_stamp = None
         self.time = 0
@@ -50,6 +53,9 @@ class TextElement:
 
         if not ui_render_object.style_sheet:
             return {}
+        
+        if hasattr(self, "input_type"):
+            modifiers["input_type"] = self.input_type
 
         self.style = ui_render_object.style_sheet.get_style(_type, classes, _id, modifiers)
         self.transition = self.style.get("transition", {})
@@ -60,6 +66,7 @@ class TextElement:
             handle_transition(self.style, self.style_stamp, self.delay_dict, self.time, self.start_dict)
 
         self.scale = self.style_stamp.get("scale", 1)
+        self.text_align = self.style_stamp.get("text-align", "left")
 
         self.color = self.style_stamp["color"]
         self.font_size = self.style_stamp["font-size"]
@@ -97,12 +104,34 @@ class TextElement:
 
         self.rect = self.surface.get_rect()
 
-    def draw(self, screen: pygame.Surface, ui_render_object: UIRenderObject, padding: tuple[int, int, int, int], margin: tuple[int, int, int, int], offset: tuple[int, int, int, int], outerPosition: tuple[int, int, int, int]) -> None:
+    def get_text_position(self, outer_position: tuple[int, int, int, int], padding: tuple[int, int, int, int]) -> tuple[int, int]:
+        x: int = 0
+        y: int = 0
+
+        if self.text_align == "center":
+            x = outer_position[0] + int((outer_position[2] - self.rect.width) / 2)
+        elif self.text_align == "left":
+            x = outer_position[0] + padding[3]
+        elif self.text_align == "right":
+            x = outer_position[0] + outer_position[2] - padding[1] - self.rect.width
+
+        if self.y_align == "center":
+            y = outer_position[1] + int((outer_position[3] - self.rect.height) / 2)
+        elif self.y_align == "top":
+            y = outer_position[1] + padding[0]
+        elif self.y_align == "bottom":
+            y = outer_position[1] + outer_position[3] - padding[2] - self.rect.height
+
+        return (x, y)
+
+    def draw(self, screen: pygame.Surface, ui_render_object: UIRenderObject, padding: tuple[int, int, int, int], margin: tuple[int, int, int, int], offset: tuple[int, int, int, int], outer_position: tuple[int, int, int, int]) -> None:
         if not self.surface:
             return
 
-        self.rect.x = outerPosition[0] + int((outerPosition[2] - self.rect.width) / 2)
-        self.rect.y = outerPosition[1] + int((outerPosition[3] - self.rect.height) / 2)
+        position: tuple[int, int] = self.get_text_position(outer_position, padding)
+
+        self.rect.x = position[0]
+        self.rect.y = position[1]
 
         #self.rect.x = outerPosition[0] + padding[3] * self.scale + int((self.rect.x * self.scale - self.rect.x) / 2)
         #self.rect.y = outerPosition[1] + padding[0] * self.scale + int((self.rect.y * self.scale - self.rect.y) / 2)
@@ -495,15 +524,17 @@ class INPUT(TextElement):
             start_x, text_y, end_x - start_x, self.rect.height
         ))
 
-    def draw(self, screen: pygame.Surface, ui_render_object: UIRenderObject, padding: tuple[int, int, int, int], margin: tuple[int, int, int, int], offset: tuple[int, int, int, int], outerPosition: tuple[int, int, int, int]) -> None:
+    def draw(self, screen: pygame.Surface, ui_render_object: UIRenderObject, padding: tuple[int, int, int, int], margin: tuple[int, int, int, int], offset: tuple[int, int, int, int], outer_position: tuple[int, int, int, int]) -> None:
         if self.focus and self.surface:
-            all_text_x: int = outerPosition[0] + int((outerPosition[2] - self.rect.width) / 2)
-            all_text_y: int = outerPosition[1] + int((outerPosition[3] - self.rect.height) / 2)
+            position: tuple[int, int] = self.get_text_position(outer_position, padding)
+
+            all_text_x: int = position[0]
+            all_text_y: int = position[1]
 
             before_text_surface: pygame.Surface = self.font.render(self.text[:self.caret_position], True, (0, 0, 0))
             before_text_rect: pygame.Rect = before_text_surface.get_rect()
             
-            caret_height: int = outerPosition[3] - 4 - padding[0] - padding[2]
+            caret_height: int = outer_position[3] - 4 - padding[0] - padding[2]
 
             caret_x: int = all_text_x + before_text_rect.width - 1
             
@@ -523,7 +554,84 @@ class INPUT(TextElement):
                     pygame.draw.rect(
                         screen,
                         (0, 0, 0),
-                        (caret_x, outerPosition[1] + int((outerPosition[3] - caret_height) / 2), self.caret_size_x, caret_height)
+                        (caret_x, outer_position[1] + int((outer_position[3] - caret_height) / 2), self.caret_size_x, caret_height)
                     )
         
-        return super().draw(screen, ui_render_object, padding, margin, offset, outerPosition)
+        return super().draw(screen, ui_render_object, padding, margin, offset, outer_position)
+
+class INPUT_BUTTON(TextElement):
+    def __init__(self, input_type: str, name: str) -> INPUT_BUTTON:
+        self.input_type = input_type
+        self.active = False
+        self.name = name
+
+        super().__init__("")
+
+        if self.input_type == "radio":
+            add_radio_input(self)
+    
+    def check(self) -> None:
+        if self.input_type == "radio":
+            neighbor_inputs: list[INPUT_BUTTON] | None = get_radio_inputs(self.name)
+
+            if neighbor_inputs:
+                for neighbor_input in neighbor_inputs:
+                    neighbor_input.active = False
+            
+            self.active = True
+        elif self.input_type == "checkbox":
+            self.active = not self.active
+
+    def draw(self, screen: pygame.Surface, ui_render_object: UIRenderObject, padding: tuple[int, int, int, int], margin: tuple[int, int, int, int], offset: tuple[int, int, int, int], outer_position: tuple[int, int, int, int]) -> None:
+        if self.input_type == "radio":
+            center: tuple[int, int] = (
+                outer_position[0] + int(outer_position[2] / 2),
+                outer_position[1] + int(outer_position[3] / 2)
+            )
+
+            radius: int = 0
+
+            if outer_position[2] < outer_position[3]:
+                radius = int(outer_position[2] / 2 - ((padding[1] + padding[3]) / 2))
+            else:
+                radius = int(outer_position[3] / 2 - ((padding[0] + padding[2]) / 2))
+
+            color: tuple[int, int, int] = (255, 255, 255)
+
+            if self.active:
+                color = (0, 128, 0)
+
+                inner_radius: int = int(radius / 1.75)
+
+                pygame.draw.circle(screen, color, center, inner_radius)
+
+            pygame.draw.circle(screen, color, center, radius, width=2)
+        elif self.input_type == "checkbox":
+            size: int = 0
+
+            if outer_position[2] < outer_position[3]:
+                size = int(outer_position[2] - (padding[1] + padding[3]))
+            else:
+                size = int(outer_position[3] - (padding[0] + padding[2]))
+            
+            position: tuple[int, int] = (
+                outer_position[0] + int((outer_position[2] - size) / 2),
+                outer_position[1] + int((outer_position[3] - size) / 2)
+            )
+
+            color: tuple[int, int, int] = (255, 255, 255)
+            border_width: int = 2
+
+            if self.active:
+                color = (0, 128, 0)
+                border_width = 0
+
+            pygame.draw.rect(screen, color, (position[0], position[1], size, size), width=border_width)
+
+            if self.active:
+                mark_image: pygame.image = get_framework_image("mark")
+
+                if mark_image:
+                    mark_image = pygame.transform.smoothscale(mark_image, (size, size))
+                
+                    screen.blit(mark_image, (position[0], position[1], size, size))

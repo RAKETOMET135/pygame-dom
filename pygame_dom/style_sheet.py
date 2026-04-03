@@ -1,6 +1,7 @@
 from __future__ import annotations
 from importlib import resources
 from pygame_dom.data.named_colors import CSS_NAMED_COLORS
+from pygame_dom.cache.registry import add_framework_image
 import pygame
 import math
 
@@ -47,6 +48,11 @@ class StyleSheet:
         
         if not is_file_loaded:
             return
+        
+        with resources.files("pygame_dom.images").joinpath("mark.png").open("rb") as file:
+            image: pygame.Surface = pygame.image.load(file).convert_alpha()
+
+            add_framework_image(image, "mark")
         
         self.__load_default_css()
 
@@ -365,6 +371,8 @@ class StyleSheet:
                 style["transition"] = self.get_pygame_transition(style_rule.value)
             case "translate":
                 style["translate"] = self.get_pygame_translate(style_rule.value)
+            case "text-align":
+                style["text-align"] = self.get_pygame_text_align(style_rule.value)
 
     def get_style(self, _type: str, classes: list[str], _id: str, modifiers: dict) -> dict:
         style: dict = {
@@ -401,8 +409,12 @@ class StyleSheet:
             "visibility": "visible",
             "scale": 1,
             "transition": {},
-            "translate": (0, 0)
+            "translate": (0, 0),
+            "text-align": "left"
         }
+
+        if modifiers.get("input_type", "") in ["text", "password", "number"]:
+            style["cursor"] = "text"
 
         for tag_style in self.default_style:
             if not tag_style.selector == _type:
@@ -513,6 +525,12 @@ class StyleSheet:
             return float(unit_string[:len(unit_string) - 1]) * 1_000
 
         return 0
+
+    def get_pygame_text_align(self, text_align: str) -> str:
+        if text_align == "left" or text_align == "right" or text_align == "center":
+            return text_align
+        
+        return "left"
 
     def get_pygame_translate(self, translate: str) -> tuple[int | str, int | str]:
         params: list[int | str] = []

@@ -1,10 +1,13 @@
 import inspect
+import pygame
 from typing import Callable, Any
 from pygame_dom.ui_event import UIEvent
 
 FUNCTION_REGISTRY: dict = {}
 STATE_REGISTRY: dict = {}
 PAGES: dict = {}
+RADIO_INPUTS: dict = {}
+FRAMEWORK_IMAGES: dict = {}
 
 class DuplicateStateError(Exception):
     pass
@@ -49,3 +52,29 @@ def get_state(state_name: str) -> Any | None:
 def state_update(state_name: str) -> None:
     for page in PAGES.values():
         page.state_parser.on_state_created_by_user(state_name)
+
+def add_radio_input(radio_input: Any) -> None:
+    key: str = radio_input.name
+
+    if key == "":
+        return
+
+    if key in RADIO_INPUTS:
+        RADIO_INPUTS[key].append(radio_input)
+    else:
+        RADIO_INPUTS[key] = [radio_input]
+
+def get_radio_inputs(name: str) -> Any | None:
+    if name in RADIO_INPUTS:
+        return RADIO_INPUTS[name]
+
+    return None
+
+def add_framework_image(surface: pygame.Surface, name: str) -> None:
+    FRAMEWORK_IMAGES[name] = surface
+
+def get_framework_image(name: str) -> pygame.Surface | None:
+    if name in FRAMEWORK_IMAGES:
+        return FRAMEWORK_IMAGES[name]
+    
+    return None
