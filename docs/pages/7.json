@@ -86,6 +86,42 @@
             "text": "<span class='val'>text-align</span>"
         },
         {
+            "type": "subsubheader",
+            "text": "Text decoration line"
+        },
+        {
+            "type": "text",
+            "text": "You can use this property to create a line decoration for the text. This property supports <span class='param'>none</span>, <span class='param'>underline</span>, <span class='param'>overline</span> and <span class='param'>line-through</span>."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>text-decoration-line</span>"
+        },
+        {
+            "type": "subsubheader",
+            "text": "Text decoration color"
+        },
+        {
+            "type": "text",
+            "text": "You can use this property to set decoration line color. Default decoration line color is the text color. Color supports <span class='param'>CSS color names</span>, <span class='param'>rgb</span>, <span class='param'>rgba</span> and <span class='param'>hex</span>."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>text-decoration-color</span>"
+        },
+        {
+            "type": "subsubheader",
+            "text": "Text decoration thickness"
+        },
+        {
+            "type": "text",
+            "text": "You can use this property to set decoration line thicknes. Default thicknes is 2px. This property supports pixels (<span class='param'>px</span>)."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>text-decoration-thickness</span>"
+        },
+        {
             "type": "subheader",
             "text": "Visual"
         },

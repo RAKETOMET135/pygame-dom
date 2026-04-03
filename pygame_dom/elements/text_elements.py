@@ -21,6 +21,9 @@ class TextElement:
         self.parent_scale = 1
         self.text_align = "left"
         self.y_align = "top"
+        self.text_decoration = "none"
+        self.text_decoration_color = (255, 255, 255, 255)
+        self.text_decoration_thickness = 2
 
         self.style_stamp = None
         self.time = 0
@@ -67,6 +70,15 @@ class TextElement:
 
         self.scale = self.style_stamp.get("scale", 1)
         self.text_align = self.style_stamp.get("text-align", "left")
+        self.text_decoration = self.style_stamp.get("text-decoration-line", "none")
+        self.text_decoration_thickness = self.style_stamp.get("text-decoration-thickness", 2)
+
+        text_decoration_color: tuple | None = self.style_stamp.get("text-decoration-color")
+
+        if not text_decoration_color:
+            self.text_decoration_color = self.style_stamp.get("color", (255, 255, 255))
+        else:
+            self.text_decoration_color = text_decoration_color
 
         self.color = self.style_stamp["color"]
         self.font_size = self.style_stamp["font-size"]
@@ -137,6 +149,19 @@ class TextElement:
         #self.rect.y = outerPosition[1] + padding[0] * self.scale + int((self.rect.y * self.scale - self.rect.y) / 2)
 
         screen.blit(self.surface, self.rect)
+
+        if self.text_decoration == "underline":
+            pygame.draw.rect(screen, self.text_decoration_color, (
+                self.rect.x, self.rect.y + self.rect.height, self.rect.width, self.text_decoration_thickness
+            ))
+        elif self.text_decoration == "overline":
+            pygame.draw.rect(screen, self.text_decoration_color, (
+                self.rect.x, self.rect.y - self.text_decoration_thickness, self.rect.width, self.text_decoration_thickness
+            ))
+        elif self.text_decoration == "line-through":
+            pygame.draw.rect(screen, self.text_decoration_color, (
+                self.rect.x, self.rect.y + int(self.rect.height / 2), self.rect.width, self.text_decoration_thickness
+            ))
 
 class H1(TextElement):
     def __init__(self, text: str) -> H1:

@@ -391,6 +391,18 @@ class StyleSheet:
                 style["translate"] = self.get_pygame_translate(style_rule.value)
             case "text-align":
                 style["text-align"] = self.get_pygame_text_align(style_rule.value)
+            case "text-decoration-line":
+                style["text-decoration-line"] = self.get_pygame_text_decoration(style_rule.value)
+            case "text-decoration-color":
+                style["text-decoration-color"] = self.get_pygame_color(style_rule.value)
+            case "text-decoration-thickness":
+                style["text-decoration-thickness"] = self.get_pygame_onevalue_size(style_rule.value)
+            case "text-decoration":
+                output_decoration: tuple = self.get_pygame_text_decoration_multi(style_rule.value)
+
+                style["text-decoration-line"] = output_decoration[0]
+                style["text-decoration-color"] = output_decoration[1]
+                style["text-decoration-thickness"] = output_decoration[2]
 
     def get_style(self, _type: str, classes: list[str], _id: str, modifiers: dict) -> dict:
         style: dict = {
@@ -428,7 +440,10 @@ class StyleSheet:
             "scale": 1,
             "transition": {},
             "translate": (0, 0),
-            "text-align": "left"
+            "text-align": "left",
+            "text-decoration-line": "none",
+            "text-decoration-color": None,
+            "text-decoration-thickness": 2
         }
 
         if modifiers.get("input_type", "") in ["text", "password", "number"]:
@@ -543,6 +558,56 @@ class StyleSheet:
             return float(unit_string[:len(unit_string) - 1]) * 1_000
 
         return 0
+
+    def get_pygame_text_decoration_multi(self, multi_text_decoration: str) -> tuple[str, tuple[int, int, int] | tuple[int, int, int, int] | None, int]:
+        if multi_text_decoration.startswith("none"):
+            return ("none", None, 2)
+        
+        does_start: bool = False
+        line: str = "none"
+
+        if multi_text_decoration.startswith("underline"):
+            line = "underline"
+            does_start = True
+        elif multi_text_decoration.startswith("overline"):
+            line = "overline"
+            does_start = True
+        elif multi_text_decoration.startswith("line-through"):
+            line = "line-through"
+            does_start = True
+        
+        if not does_start:
+            return ("none", None, 2)
+        
+        multi_text_decoration = multi_text_decoration.replace(line, "", 1)
+
+        r_number: str = ""
+
+        if multi_text_decoration.endswith("px"):
+            for i in range(len(multi_text_decoration) - 2):
+                letter = multi_text_decoration[len(multi_text_decoration) - 3 - i]
+
+                if letter.isalpha() or letter == ")":
+                    break
+
+                r_number += letter
+
+        number: str = ""
+
+        for i in range(len(r_number)):
+            number += r_number[len(r_number) - 1 - i]
+
+        number += "px"
+
+        multi_text_decoration = multi_text_decoration.replace(number, "", 1)
+
+        return (line, self.get_pygame_color(multi_text_decoration), self.get_pygame_onevalue_size(number))
+
+    def get_pygame_text_decoration(self, text_decoration: str) -> str:
+        if text_decoration == "none" or text_decoration == "underline" or text_decoration == "overline" or text_decoration == "line-through":
+            return text_decoration
+        
+        return "none"
 
     def get_pygame_text_align(self, text_align: str) -> str:
         if text_align == "left" or text_align == "right" or text_align == "center":
