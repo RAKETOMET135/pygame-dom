@@ -132,6 +132,9 @@ class UIPage:
                 elif input_type in ["checkbox", "radio"]:
                     element_instance = INPUT_BUTTON(input_type, element.get("name", ""))
 
+                    if element.get("checked") == "":
+                        element_instance.active = True
+
         ui_element: UIElement = UIElement(element_instance, element_type, parent)
         ui_element.set_classes(element.get("class") or [])
         ui_element.set_id(element.get("id") or "")
@@ -227,6 +230,35 @@ class UIPage:
 
             if is_hovered_element:
                 hover = True
+            
+            if child.wants_focus:
+                child.wants_focus = False
+
+                if self.focused_element:
+                    self.focused_element.element.focus = False
+
+                self.focused_element = child
+
+                child.element.focus = True
+
+                self.focused_element.element.caret_position = len(self.focused_element.element.text)
+                    
+                if hasattr(self.focused_element.element, "focus_element"):
+                    self.focused_element.element.focus_element()
+            
+            if child.wants_unfocus:
+                child.wants_unfocus = False
+
+                if self.focused_element:
+                    self.focused_element.element.focus = False
+
+                    if hasattr(self.focused_element.element, "reset_selection"):
+                        self.focused_element.element.reset_selection()
+                
+                    if hasattr(self.focused_element.element, "unfocus_element"):
+                        self.focused_element.element.unfocus_element()
+
+                    self.focused_element = None
 
         return hover
 
@@ -396,11 +428,39 @@ class UIPage:
                     instance.is_right_click_held = False
 
                     affected_elements.append(instance)
-            
             is_hovered_element: bool = self.__check_sub_elements(mouse_position, instance, affected_elements, btn_down, btn_up, btn)
 
             if is_hovered_element:
                 element_hovered = True
+            
+            if instance.wants_focus:
+                instance.wants_focus = False
+
+                if self.focused_element:
+                    self.focused_element.element.focus = False
+
+                self.focused_element = instance
+
+                instance.element.focus = True
+
+                self.focused_element.element.caret_position = len(self.focused_element.element.text)
+                    
+                if hasattr(self.focused_element.element, "focus_element"):
+                    self.focused_element.element.focus_element()
+            
+            if instance.wants_unfocus:
+                instance.wants_unfocus = False
+
+                if self.focused_element:
+                    self.focused_element.element.focus = False
+
+                    if hasattr(self.focused_element.element, "reset_selection"):
+                        self.focused_element.element.reset_selection()
+                
+                    if hasattr(self.focused_element.element, "unfocus_element"):
+                        self.focused_element.element.unfocus_element()
+
+                    self.focused_element = None
 
         root_event_element: UIElement = self.__get_top_element(affected_elements)
 

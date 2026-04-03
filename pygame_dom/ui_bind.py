@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import Any
-from pygame_dom.cache.registry import add_bind
+from pygame_dom.cache.registry import add_bind, update_bind_elements
 from pygame_dom.ui_element import UIElement
 
 class UIBind:
@@ -10,6 +10,11 @@ class UIBind:
 
         add_bind(self)
     
+    def set(self, value: Any) -> None:
+        self._value = value
+
+        update_bind_elements(self)
+
     @property
     def value(self) -> Any | None:
         return self._value

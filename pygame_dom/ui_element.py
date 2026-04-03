@@ -3,7 +3,7 @@ from typing import Any
 from enum import Enum, auto
 from pygame_dom.ui_render_object import UIRenderObject
 from pygame_dom.ui_event import UIEvent
-from pygame_dom.cache.registry import exec_function
+from pygame_dom.cache.registry import exec_function, add_ui_element
 import pygame
 
 class Display(Enum):
@@ -56,7 +56,35 @@ class UIElement:
         self.scale = 1
         self.parent_scale = 1
 
+        self.wants_focus = False
+        self.wants_unfocus = False
+
         self.element.root = self
+
+        add_ui_element(self)
+
+    def on_bind_set(self, bind: Any, bind_type: str) -> None:
+        if bind_type == "bind:checked":
+            value: Any = bind.value
+
+            if isinstance(value, bool) and hasattr(self.element, "active"):
+                self.element.active = value
+        elif bind_type == "bind:value":
+            value: Any = bind.value
+
+            if isinstance(value, str) and hasattr(self.element, "caret_position"):
+                self.element.text = value
+                self.element.caret_position = len(value)
+                self.element.selection_start = self.element.caret_position
+                self.element.selection_end = self.element.caret_position
+        elif bind_type == "bind:focus":
+            value: Any = bind.value
+
+            if isinstance(value, bool) and hasattr(self.element, "focus"):
+                if value:
+                    self.wants_focus = True
+                else:
+                    self.wants_unfocus = True
 
     def on_event(self, event: UIEvent) -> None:
         for attr, value in self.attrs.items():

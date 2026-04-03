@@ -9,6 +9,7 @@ BIND_REGISTRY: dict = {}
 PAGES: dict = {}
 RADIO_INPUTS: dict = {}
 FRAMEWORK_IMAGES: dict = {}
+UI_ELEMENTS: list = []
 
 class DuplicateStateError(Exception):
     pass
@@ -73,6 +74,19 @@ def update_bind(bind_name: str, new_value: Any) -> None:
     
     for bind in binds:
         bind._value = new_value
+
+def update_bind_elements(bind: Any) -> None:
+    for ui_element in UI_ELEMENTS:
+        binds: dict = ui_element.binds
+
+        for key, _bind in binds.items():
+            if not _bind == bind.name:
+                continue
+
+            ui_element.on_bind_set(bind, key)
+
+def add_ui_element(ui_element: Any) -> None:
+    UI_ELEMENTS.append(ui_element)
 
 def add_radio_input(radio_input: Any) -> None:
     key: str = radio_input.name
