@@ -5,11 +5,15 @@ from pygame_dom.ui_event import UIEvent
 
 FUNCTION_REGISTRY: dict = {}
 STATE_REGISTRY: dict = {}
+BIND_REGISTRY: dict = {}
 PAGES: dict = {}
 RADIO_INPUTS: dict = {}
 FRAMEWORK_IMAGES: dict = {}
 
 class DuplicateStateError(Exception):
+    pass
+
+class DuplicateBindError(Exception):
     pass
 
 def exec_function(function_name: str, event: UIEvent) -> None:
@@ -52,6 +56,23 @@ def get_state(state_name: str) -> Any | None:
 def state_update(state_name: str) -> None:
     for page in PAGES.values():
         page.state_parser.on_state_created_by_user(state_name)
+
+def add_bind(bind: Any) -> None:
+    existing_binds: list | None = BIND_REGISTRY.get(bind.name)
+
+    if not existing_binds:
+        BIND_REGISTRY[bind.name] = [bind]
+    else:
+        BIND_REGISTRY[bind.name].append(bind)
+
+def update_bind(bind_name: str, new_value: Any) -> None:
+    binds: list | None = BIND_REGISTRY.get(bind_name)
+
+    if not binds:
+        return
+    
+    for bind in binds:
+        bind._value = new_value
 
 def add_radio_input(radio_input: Any) -> None:
     key: str = radio_input.name

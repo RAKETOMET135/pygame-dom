@@ -60,6 +60,8 @@ class UIPage:
         """
         Loads CSS file that will be used to style this page
 
+        You can load multiple CSS files
+
         Args:
             css_file_path (str): Path to CSS file
         """
@@ -81,6 +83,20 @@ class UIPage:
 
         for element in self.elements:
             self.__build_element(element)
+
+    def __setup_element_binds(self, ui_element: UIElement, element: Tag) -> None:
+        registered_binds: list[str] = ["bind:value", "bind:checked", "bind:focus"]
+
+        for registered_bind in registered_binds:
+            bind_name: str | None = element.get(registered_bind)
+
+            if not bind_name:
+                continue
+
+            ui_element.binds[registered_bind] = bind_name
+        
+        if ui_element.element and hasattr(ui_element.element, "init_bind"):
+            ui_element.element.init_bind()
 
     def __build_element(self, element: Tag, parent: UIElement | None = None) -> None:
         element_type: str = element.name
@@ -115,11 +131,13 @@ class UIPage:
                     element_instance = INPUT(element.get("placeholder", ""), input_type)
                 elif input_type in ["checkbox", "radio"]:
                     element_instance = INPUT_BUTTON(input_type, element.get("name", ""))
-        
+
         ui_element: UIElement = UIElement(element_instance, element_type, parent)
         ui_element.set_classes(element.get("class") or [])
         ui_element.set_id(element.get("id") or "")
         ui_element.attrs = element.attrs
+
+        self.__setup_element_binds(ui_element, element)
 
         for attr, value in ui_element.attrs.items():
             self.state_parser.parse_attr(value, ui_element, attr)
@@ -440,6 +458,9 @@ class UIPage:
 
                 if hasattr(self.focused_element.element, "reset_selection"):
                     self.focused_element.element.reset_selection()
+                
+                if hasattr(self.focused_element.element, "unfocus_element"):
+                    self.focused_element.element.unfocus_element()
 
                 self.focused_element = None
 
@@ -494,12 +515,18 @@ class UIPage:
 
                     if hasattr(self.focused_element.element, "click_to_select_caret_position"):
                         self.focused_element.element.click_to_select_caret_position(mouse_position)
+                    
+                    if hasattr(self.focused_element.element, "focus_element"):
+                        self.focused_element.element.focus_element()
                 elif created_event == "leftmousedown":
                     if self.focused_element:
                         self.focused_element.element.focus = False
 
                         if hasattr(self.focused_element.element, "reset_selection"):
                             self.focused_element.element.reset_selection()
+                        
+                        if hasattr(self.focused_element.element, "unfocus_element"):
+                            self.focused_element.element.unfocus_element()
 
                         self.focused_element = None
 

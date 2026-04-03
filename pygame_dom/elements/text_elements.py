@@ -1,7 +1,7 @@
 from __future__ import annotations
 from pygame_dom.ui_render_object import UIRenderObject
 from pygame_dom.cache.cache import get_font
-from pygame_dom.cache.registry import add_radio_input, get_radio_inputs, get_framework_image
+from pygame_dom.cache.registry import add_radio_input, get_radio_inputs, get_framework_image, update_bind
 from pygame_dom.data.transitions import handle_transition
 import pygame
 
@@ -111,16 +111,16 @@ class TextElement:
         if self.text_align == "center":
             x = outer_position[0] + int((outer_position[2] - self.rect.width) / 2)
         elif self.text_align == "left":
-            x = outer_position[0] + padding[3]
+            x = outer_position[0] + padding[3] * self.scale * self.parent_scale
         elif self.text_align == "right":
-            x = outer_position[0] + outer_position[2] - padding[1] - self.rect.width
+            x = outer_position[0] + outer_position[2] - self.rect.width - padding[1] * self.scale * self.parent_scale
 
         if self.y_align == "center":
             y = outer_position[1] + int((outer_position[3] - self.rect.height) / 2)
         elif self.y_align == "top":
-            y = outer_position[1] + padding[0]
+            y = outer_position[1] + padding[0] * self.scale * self.parent_scale
         elif self.y_align == "bottom":
-            y = outer_position[1] + outer_position[3] - padding[2] - self.rect.height
+            y = outer_position[1] + outer_position[3] - self.rect.height - padding[2] * self.scale * self.parent_scale
 
         return (x, y)
 
@@ -194,6 +194,26 @@ class INPUT(TextElement):
         self.select_mode = False
 
         super().__init__("")
+    
+    def __handle_bind_event(self) -> None:
+        if self.input_type == "password":
+            if "bind:value" in self.root.binds:
+                update_bind(self.root.binds["bind:value"], self.secret)
+        else:
+            if "bind:value" in self.root.binds:
+                update_bind(self.root.binds["bind:value"], self.text)
+
+        if "bind:focus" in self.root.binds:
+            update_bind(self.root.binds["bind:focus"], self.focus)
+
+    def focus_element(self) -> None:
+        self.__handle_bind_event()
+    
+    def unfocus_element(self) -> None:
+        self.__handle_bind_event()
+
+    def init_bind(self) -> None:
+        self.__handle_bind_event()
     
     def get_selected_text(self) -> str:
         if self.selection_start == -1 or self.selection_end == -1:
@@ -293,6 +313,8 @@ class INPUT(TextElement):
             self.secret = self.secret[:start] + copied_text + self.secret[end:]
             self.caret_position = start + len(copied_text)
             self.selection_start = self.selection_end = -1
+        
+        self.__handle_bind_event()
 
     def move_caret_right(self, is_shift: bool) -> None:
         self.caret_position += 1
@@ -431,6 +453,8 @@ class INPUT(TextElement):
 
         self.selection_start = self.caret_position
         self.selection_end = self.caret_position
+
+        self.__handle_bind_event()
     
     def remove_character(self) -> None:
         if self.selection_start == -1 or self.selection_end == -1 or self.selection_start == self.selection_end:
@@ -459,6 +483,8 @@ class INPUT(TextElement):
             self.secret = self.secret[:start] + self.secret[end:]
             self.caret_position = start
             self.selection_start = self.selection_end = -1
+        
+        self.__handle_bind_event()
 
     def get_caret_position_from_mouse_position(self, mouse_position: tuple[int, int]) -> int:
         caret_pos: int = 0
@@ -510,15 +536,15 @@ class INPUT(TextElement):
 
         self.caret_position = self.get_caret_position_from_mouse_position(mouse_position)
 
-    def draw_selection(self, screen: pygame.Surface, text_y: int, padding: tuple[int, int, int, int]) -> None:
+    def draw_selection(self, screen: pygame.Surface, text_x: int, text_y: int, padding: tuple[int, int, int, int]) -> None:
         if self.selection_end == -1 or self.selection_start == -1 or self.selection_start == self.selection_end:
             return
         
         start: int = min(self.selection_start, self.selection_end)
         end: int = max(self.selection_start, self.selection_end)
 
-        start_x: int = self.rect.x + self.font.size(self.text[:start])[0] + padding[3]
-        end_x: int = self.rect.x + self.font.size(self.text[:end])[0] + padding[3]
+        start_x: int = text_x + self.font.size(self.text[:start])[0]
+        end_x: int = text_x + self.font.size(self.text[:end])[0]
 
         pygame.draw.rect(screen, (100, 100, 255), (
             start_x, text_y, end_x - start_x, self.rect.height
@@ -538,7 +564,7 @@ class INPUT(TextElement):
 
             caret_x: int = all_text_x + before_text_rect.width - 1
             
-            self.draw_selection(screen, all_text_y, padding)
+            self.draw_selection(screen, all_text_x, all_text_y, padding)
 
             self.padding = padding
 
@@ -570,6 +596,13 @@ class INPUT_BUTTON(TextElement):
         if self.input_type == "radio":
             add_radio_input(self)
     
+    def __handle_bind_event(self) -> None:
+        if "bind:checked" in self.root.binds:
+            update_bind(self.root.binds["bind:checked"], self.active)
+
+    def init_bind(self) -> None:
+        self.__handle_bind_event()
+
     def check(self) -> None:
         if self.input_type == "radio":
             neighbor_inputs: list[INPUT_BUTTON] | None = get_radio_inputs(self.name)
@@ -581,6 +614,8 @@ class INPUT_BUTTON(TextElement):
             self.active = True
         elif self.input_type == "checkbox":
             self.active = not self.active
+
+        self.__handle_bind_event()
 
     def draw(self, screen: pygame.Surface, ui_render_object: UIRenderObject, padding: tuple[int, int, int, int], margin: tuple[int, int, int, int], offset: tuple[int, int, int, int], outer_position: tuple[int, int, int, int]) -> None:
         if self.input_type == "radio":

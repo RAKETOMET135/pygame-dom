@@ -18,6 +18,8 @@ class UIElement:
         self.parent = parent
         self.children = []
 
+        self.binds = {}
+
         self.display = Display.BLOCK
         self.position = "static"
         self.rendered_x = 0
@@ -53,6 +55,8 @@ class UIElement:
 
         self.scale = 1
         self.parent_scale = 1
+
+        self.element.root = self
 
     def on_event(self, event: UIEvent) -> None:
         for attr, value in self.attrs.items():

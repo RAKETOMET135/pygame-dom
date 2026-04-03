@@ -4,6 +4,7 @@ from pygame_dom.page import UIPage
 from pygame_dom.cache.registry import exec_function, add_function
 from pygame_dom.ui_event import UIEvent
 from pygame_dom.ui_state import UIState
+from pygame_dom.ui_bind import UIBind
 import pygame
 
 FUNCTION_REGISTRY: dict = {}
