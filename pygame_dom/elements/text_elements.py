@@ -33,6 +33,7 @@ class TextElement:
         self.inline_style_raw = ""
         self.inline_style = {}
         self.inline_style_parsed = False
+        self.reactive_inline_style = {}
     
     def get_height(self) -> int:
         if not self.rect:
@@ -70,7 +71,9 @@ class TextElement:
         if not self.inline_style_parsed:
             self.inline_style_parsed = True
 
-            self.inline_style = ui_render_object.style_sheet.parse_inline_style(self.inline_style_raw)
+            self.inline_style = ui_render_object.style_sheet.parse_inline_style(self.inline_style_raw, self.root)
+
+        ui_render_object.style_sheet.parse_reactive_inline_style(self.reactive_inline_style, self.inline_style)
 
         ui_render_object.style_sheet.overwrite_main_style(self.style, self.inline_style)
         #

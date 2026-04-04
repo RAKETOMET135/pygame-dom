@@ -1,5 +1,6 @@
 from __future__ import annotations
 from importlib import resources
+from typing import Any
 from pygame_dom.data.named_colors import CSS_NAMED_COLORS
 from pygame_dom.cache.registry import add_framework_image
 from pygame_dom.cache.cache import get_style, add_style
@@ -31,12 +32,14 @@ class IdStyle:
         self.style_rules = style_rules
 
 class StyleSheet:
-    def __init__(self, css_file_path: str) -> StyleSheet:
+    def __init__(self, css_file_path: str, state_parser: Any) -> StyleSheet:
         self.default_style = []
         self.global_style = []
         self.tag_styles = []
         self.class_styles = []
         self.id_styles = []
+
+        self.state_parser = state_parser
 
         is_file_loaded: bool = False
         css_content: str = ""
@@ -300,7 +303,7 @@ class StyleSheet:
 
         return polished_css_string
     
-    def parse_inline_style(self, inline_style_raw: str) -> dict:
+    def parse_inline_style(self, inline_style_raw: str, ui_element: Any) -> dict:
         inline_style_raw = inline_style_raw.replace(" ", "")
 
         inline_style: dict = {}
@@ -337,11 +340,29 @@ class StyleSheet:
         applied_inline_style: dict = {}
 
         for key, value in inline_style.items():
+            if value.count("{") > 0 and value.count("}") > 0:
+                self.state_parser.detect_state(ui_element, value, f"css.{key}", True)
+
+                continue
+
             style_rule: StyleRule = StyleRule(key, value)
 
             self.apply_style_rule(applied_inline_style, style_rule)
 
         return applied_inline_style
+
+    def parse_reactive_inline_style(self, reactive_inline_style: dict, inline_style: dict) -> None:
+        if not hasattr(self, "_temp_style_rule"):
+            self._temp_style_rule = StyleRule("", "")
+
+        for key, value in reactive_inline_style.items():
+            self._temp_style_rule.name = key
+            self._temp_style_rule.value = value
+
+            if not value or value == "None":
+                continue
+
+            self.apply_style_rule(inline_style, self._temp_style_rule)
 
     def overwrite_main_style(self, main_style: dict, overwrite: dict) -> None:
         for key, value in overwrite.items():

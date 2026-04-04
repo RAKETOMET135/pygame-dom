@@ -71,7 +71,7 @@ class UIPage:
 
             return
 
-        self.style_sheet = StyleSheet(css_file_path)
+        self.style_sheet = StyleSheet(css_file_path, self.state_parser)
         self.ui_render_object.style_sheet = self.style_sheet
 
     def rebuild(self) -> None:
@@ -148,9 +148,18 @@ class UIPage:
         self.__setup_element_binds(ui_element, element)
 
         for attr, value in ui_element.attrs.items():
-            self.state_parser.detect_state(ui_element, value, f"attr.{attr}")
+            if attr == "class":
+                for i in range(len(value)):
+                    v: str = value[i]
 
-            #self.state_parser.parse_attr(value, ui_element, attr)
+                    self.state_parser.detect_state(ui_element, v, f"attr.class.{i}")
+
+                continue
+
+            if attr == "style":
+                continue
+
+            self.state_parser.detect_state(ui_element, value, f"attr.{attr}")
 
         self.state_parser.detect_state(ui_element, element_text, "text")
 

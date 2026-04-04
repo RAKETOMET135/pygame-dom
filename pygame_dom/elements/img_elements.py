@@ -26,6 +26,7 @@ class ImageElement:
         self.inline_style_raw = ""
         self.inline_style = {}
         self.inline_style_parsed = False
+        self.reactive_inline_style = {}
     
     def set_image_path(self, path: str) -> None:
         if self.path == path:
@@ -60,7 +61,9 @@ class ImageElement:
         if not self.inline_style_parsed:
             self.inline_style_parsed = True
 
-            self.inline_style = ui_render_object.style_sheet.parse_inline_style(self.inline_style_raw)
+            self.inline_style = ui_render_object.style_sheet.parse_inline_style(self.inline_style_raw, self.root)
+
+        ui_render_object.style_sheet.parse_reactive_inline_style(self.reactive_inline_style, self.inline_style)
 
         ui_render_object.style_sheet.overwrite_main_style(self.style, self.inline_style)
         #

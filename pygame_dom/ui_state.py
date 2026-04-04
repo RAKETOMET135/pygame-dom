@@ -50,6 +50,8 @@ class UIStateObject:
         self.result = None
 
         self._on_helper = ""
+        self._class_helper = -1
+        self._css_helper = ""
 
         self.__check_type(object_type)
         self.__parse_raw_text()
@@ -68,14 +70,42 @@ class UIStateObject:
                     self.ui_element.element.set_image_path(self.result)
             case "attr.on":
                 self.ui_element.attrs[self._on_helper] = self.result
+            case "attr.placeholder":
+                self.ui_element.attrs["placeholder"] = self.result
+
+                if self.ui_element.element and hasattr(self.ui_element.element, "placeholder"):
+                    self.ui_element.element.placeholder = self.result
+            case "attr.class":
+                if self._class_helper >= 0 and self._class_helper < len(self.ui_element.classes):
+                    self.ui_element.attrs["class"][self._class_helper] = self.result
+                    self.ui_element.classes[self._class_helper] = self.result
+            case "attr.id":
+                self.ui_element.attrs["id"] = self.result
+                self.ui_element.id = self.result
+            case "css":
+                if self.ui_element.element:
+                    self.ui_element.element.reactive_inline_style[self._css_helper] = self.result
 
     def __check_type(self, object_type: str) -> None:
         if object_type.startswith("attr.on"):
             self._on_helper = object_type[5:]
 
             object_type = "attr.on"
+        elif object_type.startswith("attr.class."):
+            self._class_helper = int(object_type[11:])
+
+            object_type = "attr.class"
+        elif object_type.startswith("css."):
+            self._css_helper = object_type[4:]
+
+            object_type = "css"
 
         self.object_type = object_type
+
+        # disable state in on events
+        if self._on_helper:
+            self._on_helper = ""
+            self.object_type = ""
 
     def __insert_states(self, states: list[str]) -> None:
         for state in states:
@@ -181,13 +211,16 @@ class UIStateParser:
         self.states = []
         self.attr_states = []
 
-    def detect_state(self, ui_element: UIElement, raw_text: str, state_type: str) -> None:
+    def detect_state(self, ui_element: UIElement, raw_text: str, state_type: str, autoload: bool = False) -> None:
         if raw_text.count("{") < 1 or raw_text.count("}") < 1:
             return
-        
+
         state: UIStateObject = UIStateObject(ui_element, raw_text, state_type)
 
         self.modern_states.append(state)
+
+        if autoload:
+            state.init_build()
 
 
     def render_all_states(self) -> None:
