@@ -302,10 +302,8 @@ class StyleSheet:
             polished_css_string += letter
 
         return polished_css_string
-    
-    def parse_inline_style(self, inline_style_raw: str, ui_element: Any) -> dict:
-        inline_style_raw = inline_style_raw.replace(" ", "")
 
+    def parse_inline_style(self, inline_style_raw: str, ui_element: Any) -> dict:
         inline_style: dict = {}
 
         property_name: str = ""
@@ -332,6 +330,9 @@ class StyleSheet:
             if is_value:
                 property_value += letter
             else:
+                if letter == " ":
+                    continue
+
                 property_name += letter
         
         if len(property_name) > 0:
@@ -369,6 +370,8 @@ class StyleSheet:
             main_style[key] = value
 
     def apply_style_rule(self, style: dict, style_rule: StyleRule) -> None:
+        style_rule.value = style_rule.value.replace(" ", "")
+
         match style_rule.name:
             case "color":
                 style["color"] = self.get_pygame_color(style_rule.value)
