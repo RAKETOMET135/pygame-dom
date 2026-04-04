@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import Any
 from pygame_dom.cache.registry import add_state, get_state, state_update
 from pygame_dom.ui_element import UIElement
+from pygame_dom.logic.state_eval import safe_eval
 
 class UIState:
     def __init__(self, name: str, value: Any) -> UIState:
