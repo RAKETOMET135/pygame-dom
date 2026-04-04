@@ -117,6 +117,9 @@ class ImageElement:
     def pre_render_image(self, parent_scale: float) -> None:
         self.surface = get_image(self.path, int(self.width), int(self.height))
 
+        if not self.surface:
+            return
+
         self.parent_scale = parent_scale
 
         self.rect = self.surface.get_rect()

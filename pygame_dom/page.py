@@ -148,9 +148,11 @@ class UIPage:
         self.__setup_element_binds(ui_element, element)
 
         for attr, value in ui_element.attrs.items():
-            self.state_parser.parse_attr(value, ui_element, attr)
+            self.state_parser.detect_state(ui_element, value, f"attr.{attr}")
 
-        self.state_parser.parse_text(element_text, ui_element)
+            #self.state_parser.parse_attr(value, ui_element, attr)
+
+        self.state_parser.detect_state(ui_element, element_text, "text")
 
         if parent:
             parent.add_child(ui_element)

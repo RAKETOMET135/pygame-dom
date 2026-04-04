@@ -51,20 +51,26 @@ SAFE_FUNCTIONS: Final[dict] = {
     "format": format
 }
 
-def safe_eval_wrapper(expr: str) -> Any:
+def safe_eval_wrapper(expr: str, involved_states: list[str]) -> Any:
     context: dict = {**SAFE_FUNCTIONS}
 
-    for key, value in STATE_REGISTRY:
-        if context[key]:
+    for key, value in STATE_REGISTRY.items():
+        if key in context:
             continue
 
         context[key] = value.value
 
-    for key, value in FUNCTION_REGISTRY:
-        if context[key]:
+    for key, value in FUNCTION_REGISTRY.items():
+        if key in context:
             continue
 
         context[key] = value
+    
+    for involved_state in involved_states:
+        if involved_state in context:
+            continue
+
+        return expr
     
     return safe_eval(expr, context)
 
@@ -163,5 +169,32 @@ class SafeEvaluator(ast.NodeVisitor):
     def generic_visit(self, node: Any) -> Any:
         raise ValueError(f"Unsupported expression: {type(node).__name__}")
 
+def get_variables(expr: str) -> list:
+    tree: ast.AST = ast.parse(expr, mode="eval")
+    collector: VarCollector = VarCollector()
+
+    collector.visit(tree)
+
+    return list(collector.vars)
+
+class VarCollector(ast.NodeVisitor):
+    def __init__(self) -> VarCollector:
+        self.vars = set()
+    
+    def visit_Name(self, node: Any) -> None:
+        if not (hasattr(node, "parent") and isinstance(node.parent, ast.Call) and node.parent.func is node):
+            if isinstance(node.ctx, ast.Load):
+                self.vars.add(node.id)
+
+        self.generic_visit(node)
+    
+    def visit(self, node: Any) -> None:
+        for child in ast.iter_child_nodes(node):
+            child.parent = node
+        
+        super().visit(node)
+
 #print(safe_eval("str('a').upper()", {**SAFE_FUNCTIONS}))
 #print(safe_eval("", {**SAFE_FUNCTIONS}))
+
+#print(get_variables("1 + x + len(y) + my_func(w) + lis[0] + clas.attrib"))
