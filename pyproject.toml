@@ -32,3 +32,4 @@ include = ["pygame_dom*"]
 
 [tool.setuptools.package-data]
 "pygame_dom.style" = ["*.css"]
+"pygame_dom.images" = ["*.png"]

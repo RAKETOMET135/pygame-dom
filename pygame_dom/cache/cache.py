@@ -1,7 +1,9 @@
 import pygame
+import copy
 
 cache_fonts: dict = {}
 cache_images: dict = {}
+cache_styles: dict = {}
 
 def get_font(name: str, size: int, bold: bool, italic: bool) -> pygame.font.Font:
     key: tuple[str, int, bool, bool] = (name, size, bold, italic)
@@ -28,3 +30,16 @@ def get_image(path: str, width: int, height: int) -> pygame.Surface | None:
             return None
     
     return cache_images[key]
+
+def get_style(_type: str, classes: list[str], _id: str, modifiers: dict) -> dict | None:
+    key: tuple[str, str, str, str] = (_type, str(classes), _id, str(modifiers))
+
+    if not key in cache_styles:
+        return None
+    
+    return copy.deepcopy(cache_styles[key])
+
+def add_style(_type: str, classes: list[str], _id: str, modifiers: dict, style: dict) -> None:
+    key: tuple[str, str, str, str] = (_type, str(classes), _id, str(modifiers))
+
+    cache_styles[key] = style

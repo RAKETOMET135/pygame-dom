@@ -140,6 +140,11 @@ class UIPage:
         ui_element.set_id(element.get("id") or "")
         ui_element.attrs = element.attrs
 
+        inline_style: str | None = element.get("style")
+
+        if inline_style and ui_element.element:
+            ui_element.element.inline_style_raw = inline_style
+
         self.__setup_element_binds(ui_element, element)
 
         for attr, value in ui_element.attrs.items():

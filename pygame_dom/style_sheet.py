@@ -2,8 +2,10 @@ from __future__ import annotations
 from importlib import resources
 from pygame_dom.data.named_colors import CSS_NAMED_COLORS
 from pygame_dom.cache.registry import add_framework_image
+from pygame_dom.cache.cache import get_style, add_style
 import pygame
 import math
+import copy
 
 class StyleRule:
     def __init__(self, name: str, value: str) -> StyleRule:
@@ -298,6 +300,53 @@ class StyleSheet:
 
         return polished_css_string
     
+    def parse_inline_style(self, inline_style_raw: str) -> dict:
+        inline_style_raw = inline_style_raw.replace(" ", "")
+
+        inline_style: dict = {}
+
+        property_name: str = ""
+        property_value: str = ""
+
+        is_value: bool = False
+
+        for letter in inline_style_raw:
+            if letter == ":":
+                is_value = True
+
+                continue
+            
+            if letter == ";":
+                is_value = False
+
+                inline_style[property_name] = property_value
+
+                property_name = ""
+                property_value = ""
+
+                continue
+
+            if is_value:
+                property_value += letter
+            else:
+                property_name += letter
+        
+        if len(property_name) > 0:
+            inline_style[property_name] = property_value
+        
+        applied_inline_style: dict = {}
+
+        for key, value in inline_style.items():
+            style_rule: StyleRule = StyleRule(key, value)
+
+            self.apply_style_rule(applied_inline_style, style_rule)
+
+        return applied_inline_style
+
+    def overwrite_main_style(self, main_style: dict, overwrite: dict) -> None:
+        for key, value in overwrite.items():
+            main_style[key] = value
+
     def apply_style_rule(self, style: dict, style_rule: StyleRule) -> None:
         match style_rule.name:
             case "color":
@@ -405,6 +454,11 @@ class StyleSheet:
                 style["text-decoration-thickness"] = output_decoration[2]
 
     def get_style(self, _type: str, classes: list[str], _id: str, modifiers: dict) -> dict:
+        cached_style: dict | None = get_style(_type, classes, _id, modifiers)
+
+        if cached_style:
+            return cached_style
+
         style: dict = {
             "color": (0, 0, 0, 0),
             "font-family": "timesnewroman",
@@ -530,6 +584,8 @@ class StyleSheet:
                     self.apply_style_rule(style, style_rule)
 
                 break
+
+        add_style(_type, classes, _id, modifiers, copy.deepcopy(style))
 
         return style
 

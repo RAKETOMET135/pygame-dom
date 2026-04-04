@@ -22,6 +22,10 @@ class ImageElement:
         self.time = 0
         self.delay_dict = {}
         self.start_dict = {}
+
+        self.inline_style_raw = ""
+        self.inline_style = {}
+        self.inline_style_parsed = False
     
     def set_image_path(self, path: str) -> None:
         if self.path == path:
@@ -50,7 +54,17 @@ class ImageElement:
         if not ui_render_object.style_sheet:
             return {}
 
+        # Styles (main + inline)
         self.style = ui_render_object.style_sheet.get_style(_type, classes, _id, modifiers)
+
+        if not self.inline_style_parsed:
+            self.inline_style_parsed = True
+
+            self.inline_style = ui_render_object.style_sheet.parse_inline_style(self.inline_style_raw)
+
+        ui_render_object.style_sheet.overwrite_main_style(self.style, self.inline_style)
+        #
+
         self.transition = self.style.get("transition", {})
 
         if not self.style_stamp:
