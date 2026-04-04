@@ -34,6 +34,8 @@ class TextElement:
         self.inline_style = {}
         self.inline_style_parsed = False
         self.reactive_inline_style = {}
+
+        self.modern_text = []
     
     def get_height(self) -> int:
         if not self.rect:
@@ -152,6 +154,28 @@ class TextElement:
             y = outer_position[1] + outer_position[3] - self.rect.height - padding[2] * self.scale * self.parent_scale
 
         return (x, y)
+
+    def get_modern_size(self, text: str) -> tuple[int, int]:
+        return self.font.size(text)
+
+    def get_modern_text(self, index: int) -> tuple[int, str] | None:
+        for t in self.modern_text:
+            if not t[0] == index:
+                continue
+
+            return t
+        
+        return None
+
+    def draw_modern_text(self, screen: pygame.display, modern_index: int, rect: tuple[int, int, int, int]) -> None:
+        m_text: tuple[int, str] = self.get_modern_text(modern_index)
+
+        if not m_text:
+            return
+        
+        m_text_surface: pygame.Surface = self.font.render(m_text[1], True, self.color)
+
+        screen.blit(m_text_surface, rect)
 
     def draw(self, screen: pygame.Surface, ui_render_object: UIRenderObject, padding: tuple[int, int, int, int], margin: tuple[int, int, int, int], offset: tuple[int, int, int, int], outer_position: tuple[int, int, int, int]) -> None:
         if not self.surface:
@@ -602,7 +626,7 @@ class INPUT(TextElement):
             before_text_surface: pygame.Surface = self.font.render(self.text[:self.caret_position], True, (0, 0, 0))
             before_text_rect: pygame.Rect = before_text_surface.get_rect()
             
-            caret_height: int = outer_position[3] - 4 - padding[0] - padding[2]
+            caret_height: int = before_text_rect.height
 
             caret_x: int = all_text_x + before_text_rect.width - 1
             
@@ -622,7 +646,7 @@ class INPUT(TextElement):
                     pygame.draw.rect(
                         screen,
                         (0, 0, 0),
-                        (caret_x, outer_position[1] + int((outer_position[3] - caret_height) / 2), self.caret_size_x, caret_height)
+                        (caret_x, all_text_y, self.caret_size_x, caret_height)
                     )
         
         return super().draw(screen, ui_render_object, padding, margin, offset, outer_position)

@@ -19,6 +19,7 @@ class UIRenderObject:
         self.render_zindex = 0
         self.pad_horizontal = 0
         self.pad_vertical = 0
+        self.def_render_x = 0
     
     def create_stamp(self) -> UIRenderObject:
         stamp: UIRenderObject = UIRenderObject(self.font, self.style_sheet)

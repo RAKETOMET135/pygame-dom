@@ -1,5 +1,5 @@
 from __future__ import annotations
-from bs4 import BeautifulSoup, Tag
+from bs4 import BeautifulSoup, Tag, NavigableString
 from typing import Any
 from pygame_dom.elements import *
 from pygame_dom.ui_element import UIElement
@@ -146,6 +146,27 @@ class UIPage:
             ui_element.element.inline_style_raw = inline_style
 
         self.__setup_element_binds(ui_element, element)
+
+        if element_type in ["p", "h1", "h2", "h3", "h4", "h5", "h6", "button", "div"] and ui_element.element:
+            _i: int = 0
+
+            for child in element.children:
+                if not isinstance(child, NavigableString):
+                    _i += 1
+
+                    continue
+
+                child_text: str = child.strip()
+
+                if child_text == "":
+                    continue
+
+                ui_element.element.modern_text.append((_i, child_text))
+
+                _i += 1
+
+            if len(ui_element.element.modern_text) == 1 and ui_element.element.modern_text[0][0] == 0:
+                ui_element.element.modern_text = []
 
         for attr, value in ui_element.attrs.items():
             if attr == "class":

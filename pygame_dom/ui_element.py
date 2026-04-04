@@ -21,6 +21,7 @@ class UIElement:
         self.binds = {}
 
         self.display = Display.BLOCK
+        self.display_string = "block"
         self.position = "static"
         self.rendered_x = 0
         self.rendered_y = 0
@@ -28,6 +29,8 @@ class UIElement:
         self.rendered_size_y = 0
         self.actual_size_x = 0
         self.actual_size_y = 0
+        self.margin_size_x = 0
+        self.margin_size_y = 0
         self.cursor = pygame.SYSTEM_CURSOR_ARROW
         self.custom_cursor = None
 
@@ -415,6 +418,8 @@ class UIElement:
         style: dict = self.element.set_style(ui_render_object, self.classes, self.id, self.type, { "hover": self.is_hover, "active": self.is_active, "focus": is_focused })
         self.position = style.get("position", "static")
 
+        text_align: str = style.get("text-align", "left")
+
         padding: tuple[int, int, int, int] = self.__get_padding(style, screen)
         margin: tuple[int, int, int, int] = self.__get_margin(style, screen, self.position)
         border_radius: tuple[int, int, int, int] = self.__get_border_radius(style, screen)
@@ -436,6 +441,8 @@ class UIElement:
         
         if hasattr(self.element, "pre_render_image"):
             self.element.pre_render_image(parent_scale)
+
+        self.display_string = display
 
         if display == "none" or visibility == "hidden":
             return {}
@@ -465,6 +472,8 @@ class UIElement:
         element_height: int = self.element.get_height()
 
         # Width
+        setted_width: int = 0
+
         if isinstance(size[0], str) and size[0].endswith("%"):
             size_x: int = 0
 
@@ -477,28 +486,71 @@ class UIElement:
             size_x = (size_x / 100) * float(size[0][:len(size[0]) - 1])
 
             element_width = int(size_x)
+
+            setted_width = size_x
         else:
             if size[0] > 0:
                 element_width = size[0]
+
+                setted_width = size[0]
         
         # Height
+        setted_height: int = 0
+
         if isinstance(size[1], str) and size[1].endswith("%"):
             size_y: int = 0
 
             if self.parent:
                 size_y = self.parent.get_rendered_size_y()
-            
+
             if size_y <= 0:
                 size_y = screen.get_height()
             
             size_y = (size_y / 100) * float(size[1][:len(size[1]) - 1])
 
+            setted_height = size_y
+
             element_height = int(size_y)
         else:
             if size[1] > 0:
                 element_height = size[1]
+
+                setted_height = size[1]
         
-         # Check if render background (checkbox and radio dont have bakground)
+        # Change width/height based on children (if not spec setted)
+        inline_width: int = 0
+        max_inline_width: int = 0
+
+        inline_height_used: bool = False
+
+        for child in self.children:
+            if setted_width <= 0:
+                if child.display_string == "block":
+                    if element_width < child.margin_size_x:
+                        element_width = child.margin_size_x
+                    
+                    inline_width = 0
+                elif child.display_string == "inline":
+                    inline_width += child.margin_size_x
+
+                    if inline_width > max_inline_width:
+                        max_inline_width = inline_width
+
+            if setted_height <= 0:
+                if child.display_string == "block":
+                    element_height += child.margin_size_y
+
+                    inline_height_used = True
+                elif child.display_string == "inline":
+                    if inline_height_used:
+                        inline_height_used = False
+
+                        element_height += child.margin_size_y
+        
+        if setted_width <= 0:
+            element_width += max_inline_width
+
+        # Check if render background (checkbox and radio dont have bakground)
         render_background: bool = True
 
         if hasattr(self.element, "input_type") and self.element.input_type in ["radio", "checkbox"]:
@@ -522,6 +574,10 @@ class UIElement:
         # Setup padding groups
         pad_horizontal: int = padding[1] + padding[3]
         pad_vertical: int = padding[0] + padding[2]
+
+        # Setup margin groups
+        mar_horizontal: int = margin[1] + margin[3]
+        mar_vertical: int = margin[0] + margin[2]
 
         # Get element position
         translate_x: int | str = translate[0]
@@ -554,19 +610,30 @@ class UIElement:
             children_data["render_x"] += element_width
 
         # Update data for sub element rendering
+        outer_position: tuple[int, int, int, int] = (position_x, position_y, self.actual_size_x, self.actual_size_y)
+
         self.rendered_x = position_x
         self.rendered_y = position_y
         self.rendered_size_x = element_width
         self.rendered_size_y = element_height
         self.actual_size_x = int((element_width) * scale) + int(pad_horizontal * scale)
         self.actual_size_y = int((element_height) * scale) + int(pad_vertical * scale)
+        self.margin_size_x = self.actual_size_x + int(mar_horizontal * scale)
+        self.margin_size_y = self.actual_size_y + int(mar_vertical * scale)
 
-        self.ui_render_object_stamp.render_x = position_x
-        self.ui_render_object_stamp.render_y = position_y
+        self.ui_render_object_stamp.render_x = position_x + padding[3] * (scale / parent_scale)
+        self.ui_render_object_stamp.render_y = position_y + padding[0] * (scale / parent_scale)
         self.ui_render_object_stamp.width = self.actual_size_x
         self.ui_render_object_stamp.height = self.actual_size_y
         self.ui_render_object_stamp.pad_horizontal = pad_horizontal
         self.ui_render_object_stamp.pad_vertical = pad_vertical
+        self.ui_render_object_stamp.def_render_x = self.ui_render_object_stamp.render_x
+
+        if hasattr(self.element, "text") and hasattr(self.element, "get_text_position") and len(self.element.modern_text) <= 0:
+            text_position: tuple[int, int] = self.element.get_text_position(outer_position, padding)
+
+            self.ui_render_object_stamp.render_x = text_position[0] + self.element.get_width()
+            self.ui_render_object_stamp.render_line_height = self.element.get_height()
 
         # Render background for element
         if style["background-color"] and render_background:
@@ -600,7 +667,10 @@ class UIElement:
             #    width=0
             #)
 
-        self.element.draw(screen, ui_render_object, padding, margin, offset, (position_x, position_y, self.actual_size_x, self.actual_size_y))
+        if hasattr(self.element, "modern_text") and len(self.element.modern_text) > 0:
+            pass
+        else:
+            self.element.draw(screen, ui_render_object, padding, margin, offset, outer_position)
 
         # Set data for flex children
         children_data: dict = {
@@ -621,9 +691,41 @@ class UIElement:
         children_data["scale"] = scale
 
         # Render sub elements
-        for child in self.children:
-            child.draw(screen, self.ui_render_object_stamp, children_data)
+        child_elements: int = len(self.children)
 
+        if hasattr(self.element, "modern_text"):
+            child_elements += len(self.element.modern_text)
+
+        modern_text_nodes: list = []
+        modern_text_nodes_rendered: int = 0
+
+        for i in range(child_elements):
+            if hasattr(self.element, "get_modern_text"):
+                m_text: tuple[int, str] | None = self.element.get_modern_text(i)
+
+                if m_text:
+                    modern_text_nodes_rendered += 1
+
+                    m_text_size: tuple[int, int] = self.element.get_modern_size(m_text[1])
+
+                    modern_text_nodes.append((i, (self.ui_render_object_stamp.render_x, self.ui_render_object_stamp.render_y, m_text_size[0], m_text_size[1])))
+
+                    self.ui_render_object_stamp.render_x += m_text_size[0]
+
+                    if self.ui_render_object_stamp.render_line_height < m_text_size[1]:
+                        self.ui_render_object_stamp.render_line_height = m_text_size[1]
+
+                    continue
+
+            child_node: UIElement = self.children[i - modern_text_nodes_rendered]
+
+            child_node.draw(screen, self.ui_render_object_stamp, children_data)
+        
+        # Render modern text
+        for modern_text_node in modern_text_nodes:
+            self.element.draw_modern_text(screen, modern_text_node[0], modern_text_node[1])
+
+        # Add zindex from child elements
         ui_render_object.render_zindex += self.ui_render_object_stamp.render_zindex
 
         if self.position == "absolute":
@@ -633,7 +735,7 @@ class UIElement:
         match self.display:
             case Display.BLOCK | Display.FLEX:
                 ui_render_object.render_line += 1
-                ui_render_object.render_x = 0
+                ui_render_object.render_x = ui_render_object.def_render_x
                 ui_render_object.render_y += ui_render_object.render_line_height + element_height + padding[0] + padding[2] + margin[0] + margin[2]
                 ui_render_object.render_line_height = 0
             case Display.INLINE:
