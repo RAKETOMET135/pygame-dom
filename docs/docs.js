@@ -1,6 +1,11 @@
+const SESSION_STORAGE_KEY = "pygame-dom-docs"
+
 const sectionNav = document.querySelector(".section-nav")
 const sectionHeaderText = document.querySelector("#section-header-text")
 const sectionContent = document.querySelector(".content")
+const scrollNav = document.querySelector("#scroll-nav")
+
+let sessionData = {}
 
 async function loadSectionData(sectionId, callback) {
     const result = await fetch(`pages/${sectionId}.json`)
@@ -12,6 +17,29 @@ async function loadSectionData(sectionId, callback) {
     if (!json) return
 
     callback(json)
+}
+
+function saveSessionData(data) {
+    const jsonString = JSON.stringify(data)
+
+    window.sessionStorage.setItem(SESSION_STORAGE_KEY, jsonString)
+}
+
+function loadSessionData() {
+    const jsonString = window.sessionStorage.getItem(SESSION_STORAGE_KEY)
+
+    if (!jsonString) return {}
+
+    try {
+        const data = JSON.parse(jsonString)
+
+        return data
+    }
+    catch {
+        console.warn("Could not load session data")
+    }
+
+    return null
 }
 
 function setupLinks() {
@@ -87,6 +115,12 @@ function loadSection(sectionData) {
     sectionContent.append(footer)
 }
 
+function onWindowClose() {
+    sessionData.leftNavScrollY = scrollNav.scrollTop
+
+    saveSessionData(sessionData)
+}
+
 function main() {
     const urlParams = new URLSearchParams(window.location.search)
 
@@ -97,6 +131,18 @@ function main() {
     loadSectionData(section, loadSection)
 
     setupLinks()
+
+    sessionData = loadSessionData()
+
+    if (!sessionData || sessionData == {}) {
+        sessionData = {
+            "leftNavScrollY": 0
+        }
+    }
+
+    scrollNav.scrollTop = sessionData.leftNavScrollY
+
+    window.addEventListener("beforeunload", onWindowClose)
 }
 
 main()

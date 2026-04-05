@@ -1,0 +1,146 @@
+{
+    "header": "State supported python",
+    "content": [
+        {
+            "type": "text",
+            "text": "States support minimal python. You can use simple operations, some built in functions, one-line conditions and registered functions."
+        },
+        {
+            "type": "text",
+            "text": "State expressions in {} have access to all created states. You can not access outside variables (only through registered functions)."
+        },
+        {
+            "type": "subheader",
+            "text": "Allowed operations"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>+</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>-</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>/</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>*</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>%</span>"
+        },
+        {
+            "type": "subheader",
+            "text": "Allowed built in functions"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>str()</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>int()</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>float()</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>bool()</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>abs()</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>round()</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>min()</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>max()</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>sum()</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>len()</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>range()</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>enumerate()</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>zip()</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>sorted()</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>reversed()</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>all()</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>any()</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>repr()</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>ord()</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>chr()</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>format()</span>"
+        },
+        {
+            "type": "subheader",
+            "text": "One-line conditions"
+        },
+        {
+            "type": "text",
+            "text": "You can use all logical operators and you can also use <span class='param'>and</span>, <span class='param'>or</span> and <span class='param'>not</span> in one-line conditions."
+        },
+        {
+            "type": "text",
+            "text": "Example below shows a simple one-line condition:"
+        },
+        {
+            "type": "code",
+            "lang": "python",
+            "filename": "app.py",
+            "header_color": "cornflowerblue",
+            "code": [
+                "<span class='str'>\"green\"</span> <span class='import'>if</span> score >= <span class='num'>10</span> <span class='import'>else</span> <span class='str'>\"red\"</span>"
+            ]
+        }
+    ]
+}

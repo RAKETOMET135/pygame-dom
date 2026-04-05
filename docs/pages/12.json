@@ -1,0 +1,53 @@
+{
+    "header": "Supported binds",
+    "content": [
+        {
+            "type": "text",
+            "text": "Pygame-dom uses binds for inputs only. You can view all supported binds in the list below with their explanation."
+        },
+        {
+            "type": "subheader",
+            "text": "Input binds"
+        },
+        {
+            "type": "text",
+            "text": "These binds can be used only for input elements."
+        },
+        {
+            "type": "subsubheader",
+            "text": "Value bind"
+        },
+        {
+            "type": "text",
+            "text": "This bind is used to get and set input text for <span class='param'>text</span>, <span class='param'>password</span> and <span class='param'>number</span> inputs."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>bind:value</span>"
+        },
+        {
+            "type": "subsubheader",
+            "text": "Checked bind"
+        },
+        {
+            "type": "text",
+            "text": "This bind is used to get and set checked of <span class='param'>radio</span> and <span class='param'>checkbox</span> inputs."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>bind:checked</span>"
+        },
+        {
+            "type": "subsubheader",
+            "text": "Focus bind"
+        },
+        {
+            "type": "text",
+            "text": "This bind is used to get and set focus to <span class='param'>text</span>, <span class='param'>password</span> and <span class='param'>number</span> inputs."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>bind:focus</span>"
+        }
+    ]
+}

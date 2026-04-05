@@ -1,0 +1,57 @@
+{
+    "header": "Events intro",
+    "content": [
+        {
+            "type": "text",
+            "text": "Pygame-dom supports calling your custom python functions. You can register a function and then use on attribute of HTML element."
+        },
+        {
+            "type": "text",
+            "text": "Example below shows creation and usage of a custom function for onclick event:"
+        },
+        {
+            "type": "code",
+            "lang": "python",
+            "filename": "app.py",
+            "header_color": "cornflowerblue",
+            "code": [
+                "<span class='func'>@</span><span class='class'>DOM</span><span class='func'>.register<span><span class='paren'>()</span>",
+                "<span class='keyw'>def</span> <span class='func'>on_button_click</span><span class='paren'>(</span><span class='param'>event</span>: <span class='class'>UIEvent</span><span class='paren'>)</span> -> <span class='val'>None</span>:",
+                "\t<span class='func'>print</span><span class='paren'>(</span><span class='str'>\"click\"</span><span class='paren'>)</span>"
+            ]
+        },
+        {
+            "type": "code",
+            "lang": "HTML",
+            "filename": "page.html",
+            "header_color": "orange",
+            "code": [
+                "<span class='keyw'>&lt;button</span> <span class='val'>onclick</span>=\"<span class='param'>on_button_click</span>\"<span class='keyw'>&gt;</span><span class='text'>Click</span><span class='keyw'>&lt;/button&gt;</span>"
+            ]
+        },
+        {
+            "type": "text",
+            "text": "You can also write a custom name into the decorator to use for the registered function:"
+        },
+        {
+            "type": "code",
+            "lang": "python",
+            "filename": "app.py",
+            "header_color": "cornflowerblue",
+            "code": [
+                "<span class='func'>@</span><span class='class'>DOM</span><span class='func'>.register<span><span class='paren'>(<span class='str'>\"custom_click\"</span></span><span class='paren'>)</span>",
+                "<span class='keyw'>def</span> <span class='func'>on_button_click</span><span class='paren'>(</span><span class='param'>event</span>: <span class='class'>UIEvent</span><span class='paren'>)</span> -> <span class='val'>None</span>:",
+                "\t<span class='func'>print</span><span class='paren'>(</span><span class='str'>\"click\"</span><span class='paren'>)</span>"
+            ]
+        },
+        {
+            "type": "code",
+            "lang": "HTML",
+            "filename": "page.html",
+            "header_color": "orange",
+            "code": [
+                "<span class='keyw'>&lt;button</span> <span class='val'>onclick</span>=\"<span class='param'>custom_click</span>\"<span class='keyw'>&gt;</span><span class='text'>Click</span><span class='keyw'>&lt;/button&gt;</span>"
+            ]
+        }
+    ]
+}

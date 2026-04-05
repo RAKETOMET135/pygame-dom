@@ -524,6 +524,9 @@ class UIElement:
         inline_height_used: bool = False
 
         for child in self.children:
+            if child.position == "absolute":
+                continue
+
             if setted_width <= 0:
                 if child.display_string == "block":
                     if element_width < child.margin_size_x:
@@ -553,6 +556,8 @@ class UIElement:
         # Check if render background (checkbox and radio dont have bakground)
         render_background: bool = True
 
+        bg: tuple[int, int, int, int] | None = style.get("background-color", None)
+
         if hasattr(self.element, "input_type") and self.element.input_type in ["radio", "checkbox"]:
             render_background = False
 
@@ -580,7 +585,10 @@ class UIElement:
         mar_vertical: int = margin[0] + margin[2]
 
         # Get element position
-        translate_x: int | str = translate[0]
+        translate_x: int | str = 0
+
+        if translate:
+            translate_x = translate[0]
 
         if isinstance(translate_x, str):
             if translate_x.endswith("%"):
@@ -588,7 +596,10 @@ class UIElement:
             else:
                 translate_x = 0
         
-        translate_y: int | str = translate[1]
+        translate_y: int | str = 0
+
+        if translate:
+            translate_y = translate[1]
 
         if isinstance(translate_y, str):
             if translate_y.endswith("%"):
@@ -636,7 +647,7 @@ class UIElement:
             self.ui_render_object_stamp.render_line_height = self.element.get_height()
 
         # Render background for element
-        if style["background-color"] and render_background:
+        if bg and render_background:
             rect: tuple[int, int, int, int] = (
                 int(position_x),
                 int(position_y),

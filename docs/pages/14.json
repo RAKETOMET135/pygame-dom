@@ -1,0 +1,37 @@
+{
+    "header": "State supported attributes",
+    "content": [
+        {
+            "type": "text",
+            "text": "Pygame-dom supports states for attributes that don't change the type of elements. For example type attribute of input is not allowed and same goes for on attributes."
+        },
+        {
+            "type": "subheader",
+            "text": "Supported attributes"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>class</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>id</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>src</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>style</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>placeholder</span>"
+        },
+        {
+            "type": "text",
+            "text": "You can also use states in the text of HTML elements."
+        }
+    ]
+}

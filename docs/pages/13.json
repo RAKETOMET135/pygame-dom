@@ -1,0 +1,48 @@
+{
+    "header": "States intro",
+    "content": [
+        {
+            "type": "text",
+            "text": "Pygame-dom uses states to make the UI reactive. You can use states to change element's text or to change some of the attributes like inline style."
+        },
+        {
+            "type": "text",
+            "text": "Example below shows how to create a simple state:"
+        },
+        {
+            "type": "code",
+            "lang": "python",
+            "filename": "app.py",
+            "header_color": "cornflowerblue",
+            "code": [
+                "score: <span class='class'>UIState</span> = <span class='class'>UIState</span><span class='paren'>(</span><span class='str'>\"score\"</span>, <span class='num'>0</span><span class='paren'>)</span>"
+            ]
+        },
+        {
+            "type": "code",
+            "lang": "HTML",
+            "filename": "page.html",
+            "header_color": "orange",
+            "code": [
+                "<span class='keyw'>&lt;h1&gt;</span><span class='text'>Score {score}</span><span class='keyw'>&lt;/h1&gt;</span>"
+            ]
+        },
+        {
+            "type": "text",
+            "text": "States are written into <span class='param'>{}</span>. You can use simple python operations, some of the python's built in functions like <span class='param'>len()</span> or even a simple one-line condition. State expressions in {} have access to all created states and can call user made functions that are registered."
+        },
+        {
+            "type": "text",
+            "text": "You can get and set the value of the state using the state's value property:"
+        },
+        {
+            "type": "code",
+            "lang": "python",
+            "filename": "app.py",
+            "header_color": "cornflowerblue",
+            "code": [
+                "score.value += <span class='num'>1</span>"
+            ]
+        }
+    ]
+}

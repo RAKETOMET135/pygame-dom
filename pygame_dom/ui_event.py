@@ -11,6 +11,7 @@ class UIEvent:
         self.delta_x = None
         self.delta_y = None
         self.unicode = None
+        self.mouse_position = (0, 0)
 
         self.propagation = True
     

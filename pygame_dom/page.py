@@ -600,6 +600,8 @@ class UIPage:
                     current_event.delta_x = event_attrs.get("delta_x")
                     current_event.delta_y = event_attrs.get("delta_y")
                     current_event.unicode = event_attrs.get("unicode")
+                
+                current_event.mouse_position = mouse_position
 
                 # system events (like input lmb down)
                 if created_event == "leftmousedown" and hasattr(root_event_element.element, "focus"):

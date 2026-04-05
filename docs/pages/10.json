@@ -1,0 +1,136 @@
+{
+    "header": "Event class",
+    "content": [
+        {
+            "type": "text",
+            "text": "This class is recieved as a parameter in a function that is registered and used for event handling."
+        },
+        {
+            "type": "code",
+            "lang": "python",
+            "filename": "app.py",
+            "header_color": "cornflowerblue",
+            "code": [
+                "<span class='func'>@</span><span class='class'>DOM</span><span class='func'>.register<span><span class='paren'>()</span>",
+                "<span class='keyw'>def</span> <span class='func'>on_button_click</span><span class='paren'>(</span><span class='param'>event</span>: <span class='class'>UIEvent</span><span class='paren'>)</span> -> <span class='val'>None</span>:",
+                "\t<span class='func'>print</span><span class='paren'>(</span><span class='str'>\"click\"</span><span class='paren'>)</span>"
+            ]
+        },
+        {
+            "type": "text",
+            "text": "This class has event data from the current event. Some of the data is present only for specific events and the specific data is mentioned in the supported events section."
+        },
+        {
+            "type": "subheader",
+            "text": "Class parameters"
+        },
+        {
+            "type": "text",
+            "text": "These parameters are accessible from the event parameter. Not all parameters are present for all events."
+        },
+        {
+            "type": "subsubheader",
+            "text": "Event type"
+        },
+        {
+            "type": "text",
+            "text": "This parameter contains the type of the event (<span class='param'>str</span>)."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>event_type</span>"
+        },
+        {
+            "type": "subsubheader",
+            "text": "Mouse position"
+        },
+        {
+            "type": "text",
+            "text": "This parameter contains mouse position from when the event happend (<span class='param'>tuple[int, int]</span>)."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>mouse_position</span>"
+        },
+        {
+            "type": "subsubheader",
+            "text": "Mouse button"
+        },
+        {
+            "type": "text",
+            "text": "This parameter contains the mouse button used in the event (<span class='param'>int</span>). Not all events support this parameter."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>button</span>"
+        },
+        {
+            "type": "subsubheader",
+            "text": "Mouse scroll delta x"
+        },
+        {
+            "type": "text",
+            "text": "This parameter contains the delta of the mouse scroll on x axis (<span class='param'>int</span>). Not all events support this parameter."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>delta_x</span>"
+        },
+        {
+            "type": "subsubheader",
+            "text": "Mouse scroll delta y"
+        },
+        {
+            "type": "text",
+            "text": "This parameter contains the delta of the mouse scroll on y axis (<span class='param'>int</span>). Not all events support this parameter."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>delta_y</span>"
+        },
+        {
+            "type": "subsubheader",
+            "text": "Keyboard key"
+        },
+        {
+            "type": "text",
+            "text": "This parameter contains the keyboard key used in the event (<span class='param'>int</span>). Not all events support this parameter."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>key</span>"
+        },
+        {
+            "type": "subsubheader",
+            "text": "Keyboard key unicode"
+        },
+        {
+            "type": "text",
+            "text": "This parameter contains the unicode character of the key used in the event (<span class='param'>str</span>). Not all events support this parameter."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>unicode</span>"
+        },
+        {
+            "type": "subheader",
+            "text": "Class methods"
+        },
+        {
+            "type": "text",
+            "text": "These methods are accessible from the event parameter."
+        },
+        {
+            "type": "subsubheader",
+            "text": "Event propagation"
+        },
+        {
+            "type": "text",
+            "text": "All events propagate from the source element up the DOM structure until they reach the most top element. You can use this method to stop the propagation. This method does not require parameters."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>stop_propagation()</span>"
+        }
+    ]
+}

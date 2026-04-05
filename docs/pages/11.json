@@ -1,0 +1,57 @@
+{
+    "header": "Binds intro",
+    "content": [
+        {
+            "type": "text",
+            "text": "Pygame-dom uses bind system to allow access to data of HTML elements like input's value. Binds work both ways and can be used to set data."
+        },
+        {
+            "type": "text",
+            "text": "Example below shows how to create a bind:"
+        },
+        {
+            "type": "code",
+            "lang": "python",
+            "filename": "app.py",
+            "header_color": "cornflowerblue",
+            "code": [
+                "user_input: <span class='class'>UIBind</span> = <span class='class'>UIBind</span><span class='paren'>(</span><span class='str'>\"input\"</span><span class='paren'>)</span>"
+            ]
+        },
+        {
+            "type": "code",
+            "lang": "HTML",
+            "filename": "page.html",
+            "header_color": "orange",
+            "code": [
+                "<span class='keyw'>&lt;input</span> <span class='val'>type</span>=\"<span class='param'>text</span>\"<span class='keyw'> <span class='val'>bind:value</span>=\"<span class='param'>input</span>\"<span class='keyw'>&gt;</span>"
+            ]
+        },
+        {
+            "type": "text",
+            "text": "You can get data from bind at any time in your code using the created variable and it's value property:"
+        },
+        {
+            "type": "code",
+            "lang": "python",
+            "filename": "app.py",
+            "header_color": "cornflowerblue",
+            "code": [
+                "<span class='func'>print</span><span class='paren'>(</span>user_input.value<span class='paren'>)</span>"
+            ]
+        },
+        {
+            "type": "text",
+            "text": "To set data you can use the set() method of the class that requires one parameter which is the value:"
+        },
+        {
+            "type": "code",
+            "lang": "python",
+            "filename": "app.py",
+            "header_color": "cornflowerblue",
+            "code": [
+                "user_input.<span class='func'>set</span><span class='paren'>(</span><span class='str'>\"new input text\"</span><span class='paren'>)</span>"
+            ]
+        }
+    ]
+}

@@ -1,0 +1,161 @@
+{
+    "header": "Supported events",
+    "content": [
+        {
+            "type": "text",
+            "text": "Pygame-dom supports the basic events. All events featured on this list have also their event object properties listed."
+        },
+        {
+            "type": "subheader",
+            "text": "Mouse events"
+        },
+        {
+            "type": "text",
+            "text": "These events are triggered by mouse."
+        },
+        {
+            "type": "subsubheader",
+            "text": "Mouse down"
+        },
+        {
+            "type": "text",
+            "text": "This event happens when mouse is down while being on the element. Event object gets the button integer that is down (<span class='param'>event.button</span>)."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>onmousedown</span> (<span class='val'>onpointerdown</span>)"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>onleftmousedown</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>onrightmousedown</span>"
+        },
+        {
+            "type": "subsubheader",
+            "text": "Mouse up"
+        },
+        {
+            "type": "text",
+            "text": "This event happens when mouse is up while being on the element. Event object gets the button integer that is up (<span class='param'>event.button</span>)."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>onmouseup</span> (<span class='val'>onpointerup</span>)"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>onleftmouseup</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>onrightmouseup</span>"
+        },
+        {
+            "type": "subsubheader",
+            "text": "Mouse click"
+        },
+        {
+            "type": "text",
+            "text": "This event happens when mouse is down and up while being on the element. Event object gets the button integer that is clicked (<span class='param'>event.button</span>)."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>onclick</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>onleftclick</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>onrightclick</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>ondblclick</span>"
+        },
+        {
+            "type": "subsubheader",
+            "text": "Mouse enter"
+        },
+        {
+            "type": "text",
+            "text": "This event happens when mouse enters the element."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>onmouseenter</span> (<span class='val'>onpointerenter</span>)"
+        },
+        {
+            "type": "subsubheader",
+            "text": "Mouse leave"
+        },
+        {
+            "type": "text",
+            "text": "This event happens when mouse leaves the element."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>onmouseleave</span> (<span class='val'>onpointerleave</span>)"
+        },
+        {
+            "type": "subsubheader",
+            "text": "Mouse move"
+        },
+        {
+            "type": "text",
+            "text": "This event happens when mouse moves while being on the element."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>onmousemove</span> (<span class='val'>onpointermove</span>)"
+        },
+        {
+            "type": "subsubheader",
+            "text": "Mouse wheel"
+        },
+        {
+            "type": "text",
+            "text": "This event happens when mouse wheel is scrolled. Event object gets the delta of the scroll (<span class='param'>event.delta_x</span>, <span class='param'>event.delta_y</span>)."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>onmousewheel</span>"
+        },
+        {
+            "type": "subheader",
+            "text": "Keyboard events"
+        },
+        {
+            "type": "text",
+            "text": "These events are triggered by keyboard."
+        },
+        {
+            "type": "subsubheader",
+            "text": "Key down"
+        },
+        {
+            "type": "text",
+            "text": "This event happens when key is down while the mouse is on the element. Event object gets the key integer and unicode character (<span class='param'>event.key</span>, <span class='param'>event.unicode</span>)."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>onkeydown</span>"
+        },
+        {
+            "type": "subsubheader",
+            "text": "Key up"
+        },
+        {
+            "type": "text",
+            "text": "This event happens when key is up while the mouse is on the element. Event object gets the key integer and unicode character (<<span class='param'>event.key</span>, <span class='param'>event.unicode</span>)."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>onkeyup</span>"
+        }
+    ]
+}
