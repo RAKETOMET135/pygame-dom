@@ -732,7 +732,7 @@ class INPUT_BUTTON(TextElement):
             if self.active:
                 mark_image: pygame.image = get_framework_image("mark")
 
-                if mark_image:
+                if mark_image and size > 0:
                     mark_image = pygame.transform.smoothscale(mark_image, (size, size))
                 
                     screen.blit(mark_image, (position[0], position[1], size, size))

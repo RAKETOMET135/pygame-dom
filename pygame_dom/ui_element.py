@@ -466,11 +466,11 @@ class UIElement:
                     if element_width < child.margin_size_x:
                         element_width = child.margin_size_x
                     
-                    inline_width = 0
+                    inline_width = element_width
                 elif child.display_string == "inline":
                     inline_width += child.margin_size_x
 
-                    if inline_width > max_inline_width:
+                    if inline_width > max_inline_width + element_width:
                         max_inline_width = inline_width
 
             if setted_height <= 0:
@@ -484,8 +484,8 @@ class UIElement:
 
                         element_height += child.margin_size_y
         
-        if setted_width <= 0:
-            element_width += max_inline_width
+        if setted_width <= 0 and max_inline_width > element_width:
+            element_width = max_inline_width
         
         return element_width, element_height
 
@@ -662,14 +662,15 @@ class UIElement:
             self.display = Display.FLEX
         
         # Set element to new line
-        if self.display == Display.BLOCK or self.display == Display.FLEX:
+        if (self.display == Display.BLOCK or self.display == Display.FLEX) and not self.position == "absolute":
             ui_render_object.render_line += 1
-            ui_render_object.render_x = 0
+            ui_render_object.render_x = ui_render_object.def_render_x
             ui_render_object.render_y += ui_render_object.render_line_height
             ui_render_object.render_line_height = 0
 
             if self.parent:
-                ui_render_object.render_x = self.parent.get_rendered_x()
+                #ui_render_object.render_x = self.parent.get_rendered_x()
+                pass
 
         # Get element size
         element_width, element_height = self.__calc_element_size(screen, size)
