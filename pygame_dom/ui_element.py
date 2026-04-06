@@ -375,6 +375,8 @@ class UIElement:
 
     def __calc_modern_text_dynamic_size(self, element_width: int, element_height: int, setted_width: int, setted_height: int) -> tuple[int, int]:
         calced_list: list = []
+        line_m_text_widths: list = []
+        current_line: int = 0
 
         _i: int = 0
         for i in range(len(self.element.modern_text) + len(self.children)):
@@ -400,6 +402,25 @@ class UIElement:
 
         for i, el in enumerate(calced_list):
             if not isinstance(el, tuple):
+                if el.position == "absolute":
+                    continue
+
+                if el.display_string == "block":
+                    if i == 0:
+                        line_m_text_widths.append(0)
+
+                        current_line += 1
+
+                        continue
+
+                    line_m_text_widths.append(0)
+                    line_m_text_widths.append(0)
+
+                    current_line += 2
+                elif el.display_string == "inline":
+                    if current_line >= len(line_m_text_widths):
+                        line_m_text_widths.append(0)
+
                 continue
 
             m_size: tuple[int, int] = self.element.get_modern_size(el[1])
@@ -410,6 +431,8 @@ class UIElement:
                     
                 if setted_height <= 0:
                     element_height = m_size[1]
+                
+                line_m_text_widths.append(element_width)
 
                 continue
 
@@ -445,19 +468,28 @@ class UIElement:
                         
                     if setted_width <= 0:
                         element_width += m_size[0]
-        
-        return element_width, element_height
+            
+            if current_line >= len(line_m_text_widths):
+                line_m_text_widths.append(0)
+
+            line_m_text_widths[current_line] += m_size[0]
+
+        return element_width, element_height, line_m_text_widths
 
     def __calc_dynamic_size(self, element_width: int, element_height: int, setted_width: int, setted_height: int) -> tuple[int, int]:
+        line_m_text_widths: list = []
+
         if hasattr(self.element, "modern_text") and len(self.element.modern_text) > 0:
-            element_width, element_height = self.__calc_modern_text_dynamic_size(element_width, element_height, setted_width, setted_height)
+            element_width, element_height, line_m_text_widths = self.__calc_modern_text_dynamic_size(element_width, element_height, setted_width, setted_height)
 
         inline_width: int = 0
         max_inline_width: int = 0
 
         inline_height_used: bool = False
 
-        for child in self.children:
+        current_line: int = 0
+
+        for i, child in enumerate(self.children):
             if child.position == "absolute":
                 continue
 
@@ -466,11 +498,19 @@ class UIElement:
                     if element_width < child.margin_size_x:
                         element_width = child.margin_size_x
                     
-                    inline_width = element_width
+                    current_line += 1
+
+                    if i > 0:
+                        current_line += 1
+
+                    if len(line_m_text_widths) > 0:
+                        inline_width = line_m_text_widths[current_line]
+                    else:
+                        inline_width = 0
                 elif child.display_string == "inline":
                     inline_width += child.margin_size_x
 
-                    if inline_width > max_inline_width + element_width:
+                    if inline_width > max_inline_width:
                         max_inline_width = inline_width
 
             if setted_height <= 0:
@@ -590,6 +630,118 @@ class UIElement:
         if self.is_right_click_turn:
             self.is_right_click_turn = False
             self.is_right_click_held = False
+
+    def __render_sub_elements(self, screen: pygame.Surface, children_data: dict, text_align: str) -> None:
+        def_render_x: int = self.ui_render_object_stamp.def_render_x
+        render_x: int = self.ui_render_object_stamp.render_x
+
+        def align_text(render_line_index: int) -> None:
+            if text_align == "right":
+                self.ui_render_object_stamp.def_render_x = def_render_x + self.rendered_size_x - line_widths[render_line_index]
+                self.ui_render_object_stamp.render_x = render_x + self.rendered_size_x - line_widths[render_line_index]
+            elif text_align == "center":
+                self.ui_render_object_stamp.def_render_x = def_render_x + (self.rendered_size_x - line_widths[render_line_index]) / 2
+                self.ui_render_object_stamp.render_x = render_x + (self.rendered_size_x - line_widths[render_line_index]) / 2
+
+        child_elements: int = len(self.children)
+        line_widths: list[int] = []
+
+        if hasattr(self.element, "modern_text") and len(self.element.modern_text) > 0:
+            child_elements += len(self.element.modern_text)
+
+            # Calculate the children width on lines
+            current_line_width: int = 0
+            modern_text_nodes_passed: int = 0
+
+            for i in range(child_elements):
+                m_text: tuple[int, str] | None = self.element.get_modern_text(i)
+
+                if m_text:
+                    modern_text_nodes_passed += 1
+
+                    current_line_width += self.element.get_modern_size(m_text[1])[0]
+                else:
+                    child: UIElement = self.children[i - modern_text_nodes_passed]
+
+                    if child.position == "absolute":
+                        continue
+
+                    if child.display_string == "inline":
+                        current_line_width += child.margin_size_x
+                    elif child.display_string == "block":
+                        if current_line_width > 0:
+                            line_widths.append(current_line_width)
+
+                        current_line_width = child.margin_size_x
+
+                        line_widths.append(current_line_width)
+
+                        current_line_width = 0
+            
+            if current_line_width > 0:
+                line_widths.append(current_line_width)
+
+        modern_text_nodes: list = []
+        modern_text_nodes_rendered: int = 0
+
+        prev_line_render: int = -1
+        prev_is_block: bool = False
+
+        for i in range(child_elements):
+            if len(line_widths) > 0 and not prev_line_render == self.ui_render_object_stamp.render_line:
+                prev_line_render = self.ui_render_object_stamp.render_line
+
+                align_text(self.ui_render_object_stamp.render_line)
+
+            if hasattr(self.element, "get_modern_text"):
+                m_text: tuple[int, str] | None = self.element.get_modern_text(i)
+
+                if m_text:
+                    if prev_is_block:
+                        prev_is_block = False
+
+                        if len(line_widths) > 0 and not prev_line_render == self.ui_render_object_stamp.render_line + 1:
+                            prev_line_render = self.ui_render_object_stamp.render_line + 1
+                
+                        align_text(self.ui_render_object_stamp.render_line + 1)
+
+                    modern_text_nodes_rendered += 1
+
+                    m_text_size: tuple[int, int] = self.element.get_modern_size(m_text[1])
+
+                    modern_text_nodes.append((i, (self.ui_render_object_stamp.render_x, self.ui_render_object_stamp.render_y, m_text_size[0], m_text_size[1])))
+
+                    self.ui_render_object_stamp.render_x += m_text_size[0]
+
+                    if self.ui_render_object_stamp.render_line_height < m_text_size[1]:
+                        self.ui_render_object_stamp.render_line_height = m_text_size[1]
+
+                    continue
+
+            child_index: int = i - modern_text_nodes_rendered
+
+            child_node: UIElement = self.children[child_index]
+
+            if child_node.display_string == "block" and not child_node.position == "absolute":
+                prev_is_block = True
+
+                if len(line_widths) > 0 and not prev_line_render == self.ui_render_object_stamp.render_line + 1:
+                    prev_line_render = self.ui_render_object_stamp.render_line + 1
+
+                align_text(self.ui_render_object_stamp.render_line + 1)
+            elif prev_is_block and child_node.display_string == "inline" and not child_node.position == "absolute":
+                prev_is_block = False
+
+                if len(line_widths) > 0 and not prev_line_render == self.ui_render_object_stamp.render_line + 1:
+                    prev_line_render = self.ui_render_object_stamp.render_line
+                
+                align_text(self.ui_render_object_stamp.render_line + 1)
+
+            child_node.draw(screen, self.ui_render_object_stamp, children_data)
+        
+        # Render modern text
+        for modern_text_node in modern_text_nodes:
+            self.element.draw_modern_text(screen, modern_text_node[0], modern_text_node[1])
 
     def draw(self, screen: pygame.Surface, ui_render_object: UIRenderObject, children_data: dict = {}) -> dict:
         if not self.element:
@@ -804,39 +956,7 @@ class UIElement:
         children_data["scale"] = scale
 
         # Render sub elements
-        child_elements: int = len(self.children)
-
-        if hasattr(self.element, "modern_text"):
-            child_elements += len(self.element.modern_text)
-
-        modern_text_nodes: list = []
-        modern_text_nodes_rendered: int = 0
-
-        for i in range(child_elements):
-            if hasattr(self.element, "get_modern_text"):
-                m_text: tuple[int, str] | None = self.element.get_modern_text(i)
-
-                if m_text:
-                    modern_text_nodes_rendered += 1
-
-                    m_text_size: tuple[int, int] = self.element.get_modern_size(m_text[1])
-
-                    modern_text_nodes.append((i, (self.ui_render_object_stamp.render_x, self.ui_render_object_stamp.render_y, m_text_size[0], m_text_size[1])))
-
-                    self.ui_render_object_stamp.render_x += m_text_size[0]
-
-                    if self.ui_render_object_stamp.render_line_height < m_text_size[1]:
-                        self.ui_render_object_stamp.render_line_height = m_text_size[1]
-
-                    continue
-
-            child_node: UIElement = self.children[i - modern_text_nodes_rendered]
-
-            child_node.draw(screen, self.ui_render_object_stamp, children_data)
-        
-        # Render modern text
-        for modern_text_node in modern_text_nodes:
-            self.element.draw_modern_text(screen, modern_text_node[0], modern_text_node[1])
+        self.__render_sub_elements(screen, children_data, text_align)
 
         # Add zindex from child elements
         ui_render_object.render_zindex += self.ui_render_object_stamp.render_zindex
@@ -847,7 +967,7 @@ class UIElement:
         # Update data for displays
         match self.display:
             case Display.BLOCK | Display.FLEX:
-                ui_render_object.render_line += 1
+                #ui_render_object.render_line += 1
                 ui_render_object.render_x = ui_render_object.def_render_x
                 ui_render_object.render_y += ui_render_object.render_line_height + element_height + padding[0] + padding[2] + margin[0] + margin[2]
                 ui_render_object.render_line_height = 0
