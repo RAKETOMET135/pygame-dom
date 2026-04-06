@@ -218,6 +218,26 @@
             "text": "<span class='val'>height</span>"
         },
         {
+            "type": "subsubheader",
+            "text": "Overflow"
+        },
+        {
+            "type": "text",
+            "text": "You can use this property to hide all elements that overflow the element on both or only one axis. This property supports <span class='param'>visible</span> and <span class='param'>hidden</span>."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>overflow</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>overflow-x</span>"
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>overflow-y</span>"
+        },
+        {
             "type": "subheader",
             "text": "Spacing"
         },
