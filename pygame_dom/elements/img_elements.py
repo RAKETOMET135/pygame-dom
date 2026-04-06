@@ -134,21 +134,31 @@ class ImageElement:
     def draw(self, screen: pygame.Surface, ui_render_object: UIRenderObject, padding: tuple[int, int, int, int], margin: tuple[int, int, int, int], offset: tuple[int, int, int, int], outerPosition: tuple[int, int, int, int]) -> None:
         if self.width < 0 or self.height < 0:
             self.__get_init_size()
-        
-        #self.surface = get_image(self.path, int(self.width), int(self.height))
 
         if not self.surface:
             return
 
         self.rect = self.surface.get_rect()
 
-        #self.rect.x = outerPosition[0] + padding[3]
-        #self.rect.y = outerPosition[1] + padding[0]
-
         self.rect.x = outerPosition[0] + round((outerPosition[2] - self.rect.width) / 2)
         self.rect.y = outerPosition[1] + round((outerPosition[3] - self.rect.height) / 2)
 
-        screen.blit(self.surface, self.rect)
+        if ui_render_object.overflow_surface:
+            local_overflow_surface: pygame.Surface = pygame.Surface(ui_render_object.overflow_surface, pygame.SRCALPHA)
+
+            local_overflow_surface.blit(
+                self.surface,
+                (
+                    self.rect[0] - ui_render_object.overflow_surface_x,
+                    self.rect[1] - ui_render_object.overflow_surface_y,
+                    self.rect[2],
+                    self.rect[3]
+                )
+            )
+
+            screen.blit(local_overflow_surface, (ui_render_object.overflow_surface_x, ui_render_object.overflow_surface_y))
+        else:
+            screen.blit(self.surface, self.rect)
 
 class IMG(ImageElement):
     def __init__(self, path: str) -> IMG:

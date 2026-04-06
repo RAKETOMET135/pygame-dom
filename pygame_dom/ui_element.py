@@ -31,6 +31,10 @@ class UIElement:
         self.actual_size_y = 0
         self.margin_size_x = 0
         self.margin_size_y = 0
+        self.overflow_size_x = 0
+        self.overflow_size_y = 0
+        self.overflow_x = 0
+        self.overflow_y = 0
         self.cursor = pygame.SYSTEM_CURSOR_ARROW
         self.custom_cursor = None
 
@@ -631,7 +635,7 @@ class UIElement:
             self.is_right_click_turn = False
             self.is_right_click_held = False
 
-    def __render_sub_elements(self, screen: pygame.Surface, children_data: dict, text_align: str) -> None:
+    def __render_sub_elements(self, screen: pygame.Surface, children_data: dict, text_align: str, ui_render_object: UIRenderObject) -> None:
         def_render_x: int = self.ui_render_object_stamp.def_render_x
         render_x: int = self.ui_render_object_stamp.render_x
 
@@ -741,7 +745,149 @@ class UIElement:
         
         # Render modern text
         for modern_text_node in modern_text_nodes:
-            self.element.draw_modern_text(screen, modern_text_node[0], modern_text_node[1])
+            self.element.draw_modern_text(screen, modern_text_node[0], modern_text_node[1], ui_render_object)
+
+    def __calc_overflow_size(self, position_x: int, position_y: int, ui_render_object: UIRenderObject) -> None:
+        if not ui_render_object.overflow_surface:
+            self.overflow_size_x = self.actual_size_x
+            self.overflow_size_y = self.actual_size_y
+            self.overflow_x = self.rendered_x
+            self.overflow_y = self.rendered_y
+
+            return
+
+        new_width: int = 0
+        new_height: int = 0
+        new_x: int = 0
+        new_y: int = 0
+
+        point_1: tuple[int, int] = (ui_render_object.overflow_surface_x, ui_render_object.overflow_surface_y)
+        point_2: tuple[int, int] = (ui_render_object.overflow_surface_x + self.parent.overflow_size_x, ui_render_object.overflow_surface_y + self.parent.overflow_size_y)
+
+        point_3: tuple[int, int] = (position_x, position_y)
+        point_4: tuple[int, int] = (position_x + self.actual_size_x, position_y + self.actual_size_y)
+
+        condition_1: tuple[bool, bool] = (point_3[0] >= point_1[0] and point_3[0] <= point_2[0], point_3[1] >= point_1[1] and point_3[1] <= point_2[1])
+        condition_2: tuple[bool, bool] = (point_4[0] >= point_1[0] and point_4[0] <= point_2[0], point_4[1] >= point_1[1] and point_4[1] <= point_2[1])
+
+        if condition_1[0] and condition_2[0]:
+            new_width = self.actual_size_x
+            new_x = position_x
+        elif condition_1[0]:
+            new_width = abs(point_2[0] - point_3[0])
+            new_x = position_x
+        elif condition_2[0]:
+            new_width = abs(point_1[0] - point_4[0])
+            new_x = position_x + abs(point_1[0] + point_3[0])
+        elif point_3[0] < point_1[0] and point_4[0] > point_2[0]:
+            new_width = abs(point_1[0] - point_2[0])
+            new_x = abs(point_1[0] + point_3[0])
+
+        if condition_1[1] and condition_2[1]:
+            new_height = self.actual_size_y
+            new_y = position_y
+        elif condition_1[1]:
+            new_height = abs(point_2[1] - point_3[1])
+            new_y = position_y
+        elif condition_2[1]:
+            new_height = abs(point_1[1] - point_4[1])
+            new_y = position_y + abs(point_1[1] + point_3[1])
+        elif point_3[1] < point_1[1] and point_4[1] > point_2[1]:
+            new_height = abs(point_1[1] - point_2[1])
+            new_y = abs(point_1[1] + point_3[1])
+        
+        self.overflow_size_x = new_width
+        self.overflow_size_y = new_height
+        self.overflow_x = new_x
+        self.overflow_y = new_y
+
+    def __merge_overflows(
+            self, point_1: tuple[int, int], point_2: tuple[int, int], point_3: tuple[int, int], point_4: tuple[int, int], position_x: int, position_y: int
+        ) -> tuple[int, int, int, int]:
+        new_width: int = 0
+        new_height: int = 0
+        new_x: int = 0
+        new_y: int = 0
+
+        condition_1: tuple[bool, bool] = (point_3[0] >= point_1[0] and point_3[0] <= point_2[0], point_3[1] >= point_1[1] and point_3[1] <= point_2[1])
+        condition_2: tuple[bool, bool] = (point_4[0] >= point_1[0] and point_4[0] <= point_2[0], point_4[1] >= point_1[1] and point_4[1] <= point_2[1])
+
+        if condition_1[0] and condition_2[0]:
+            new_width = self.actual_size_x
+            new_x = position_x
+        elif condition_1[0]:
+            new_width = abs(point_2[0] - point_3[0])
+            new_x = position_x
+        elif condition_2[0]:
+            new_width = abs(point_1[0] - point_4[0])
+            new_x = position_x + abs(point_1[0] + point_3[0])
+        elif point_3[0] < point_1[0] and point_4[0] > point_2[0]:
+            new_width = abs(point_1[0] - point_2[0])
+            new_x = abs(point_1[0] + point_3[0])
+
+        if condition_1[1] and condition_2[1]:
+            new_height = self.actual_size_y
+            new_y = position_y
+        elif condition_1[1]:
+            new_height = abs(point_2[1] - point_3[1])
+            new_y = position_y
+        elif condition_2[1]:
+            new_height = abs(point_1[1] - point_4[1])
+            new_y = position_y + abs(point_1[1] + point_3[1])
+        elif point_3[1] < point_1[1] and point_4[1] > point_2[1]:
+            new_height = abs(point_1[1] - point_2[1])
+            new_y = abs(point_1[1] + point_3[1])
+        
+        self.ui_render_object_stamp.overflow_surface = (new_width, new_height)
+        self.ui_render_object_stamp.overflow_surface_x = new_x
+        self.ui_render_object_stamp.overflow_surface_y = new_y
+
+    def __calc_overflows(self, screen: pygame.Surface, position_x: int, position_y: int, ui_render_object: UIRenderObject, overflow_x: str, overflow_y: str) -> None:
+        if ui_render_object.overflow_surface:
+            self.ui_render_object_stamp.overflow_surface = ui_render_object.overflow_surface
+            self.ui_render_object_stamp.overflow_surface_x = ui_render_object.overflow_surface_x
+            self.ui_render_object_stamp.overflow_surface_y = ui_render_object.overflow_surface_y
+
+        if overflow_x == "visible" and overflow_y == "visible":
+            return
+
+        point_1: tuple[int, int] = (0, 0)
+        point_2: tuple[int, int] = (0, 0)
+
+        if ui_render_object.overflow_surface:
+            point_1 = (ui_render_object.overflow_surface_x, ui_render_object.overflow_surface_y)
+            point_2 = (ui_render_object.overflow_surface_x + self.parent.overflow_size_x, ui_render_object.overflow_surface_y + self.parent.overflow_size_y)
+
+        if overflow_x == "hidden" and overflow_y == "hidden":
+            if ui_render_object.overflow_surface:
+                point_3: tuple[int, int] = (position_x, position_y)
+                point_4: tuple[int, int] = (position_x + self.actual_size_x, position_y + self.actual_size_y)
+                
+                self.__merge_overflows(point_1, point_2, point_3, point_4, position_x, position_y)
+            else:
+                self.ui_render_object_stamp.overflow_surface = (self.actual_size_x, self.actual_size_y)
+                self.ui_render_object_stamp.overflow_surface_x = position_x
+                self.ui_render_object_stamp.overflow_surface_y = position_y
+        elif overflow_x == "hidden":
+            if ui_render_object.overflow_surface:
+                point_3: tuple[int, int] = (position_x, 0)
+                point_4: tuple[int, int] = (position_x + self.actual_size_x, screen.get_height())
+
+                self.__merge_overflows(point_1, point_2, point_3, point_4, position_x, position_y)
+            else:
+                self.ui_render_object_stamp.overflow_surface = (self.actual_size_x, screen.get_height())
+                self.ui_render_object_stamp.overflow_surface_x = position_x
+                self.ui_render_object_stamp.overflow_surface_y = 0
+        elif overflow_y == "hidden":
+            if ui_render_object.overflow_surface:
+                point_3: tuple[int, int] = (0, position_y)
+                point_4: tuple[int, int] = (screen.get_width(), position_y + self.actual_size_y)
+
+                self.__merge_overflows(point_1, point_2, point_3, point_4, position_x, position_y)
+            else:
+                self.ui_render_object_stamp.overflow_surface = (screen.get_width(), self.actual_size_y)
+                self.ui_render_object_stamp.overflow_surface_x = 0
+                self.ui_render_object_stamp.overflow_surface_y = position_y
 
     def draw(self, screen: pygame.Surface, ui_render_object: UIRenderObject, children_data: dict = {}) -> dict:
         if not self.element:
@@ -894,6 +1040,13 @@ class UIElement:
         self.ui_render_object_stamp.pad_vertical = pad_vertical
         self.ui_render_object_stamp.def_render_x = self.ui_render_object_stamp.render_x
 
+        # Create an overflow surface if overflow: hidden
+        overflow_x: str = style.get("overflow-x", "visible")
+        overflow_y: str = style.get("overflow-y", "visible")
+
+        self.__calc_overflow_size(position_x, position_y, ui_render_object)
+        self.__calc_overflows(screen, position_x, position_y, ui_render_object, overflow_x, overflow_y)
+
         if hasattr(self.element, "text") and hasattr(self.element, "get_text_position") and len(self.element.modern_text) <= 0:
             text_position: tuple[int, int] = self.element.get_text_position(outer_position, padding)
 
@@ -911,15 +1064,33 @@ class UIElement:
 
             color: tuple = tuple(int(c) for c in style.get("background-color", (0, 0, 0, 0)))
 
-            pygame.draw.rect(
-                screen, 
-                color, 
-                rect, 
-                border_top_left_radius=int(border_radius[0]), 
-                border_top_right_radius=int(border_radius[1]),
-                border_bottom_left_radius=int(border_radius[2]),
-                border_bottom_right_radius=int(border_radius[3])
-            )
+            if ui_render_object.overflow_surface:
+                if ui_render_object.overflow_surface[0] <= 0 or ui_render_object.overflow_surface[1] <= 0:
+                    pass
+
+                local_overflow_surface: pygame.Surface = pygame.Surface(ui_render_object.overflow_surface, pygame.SRCALPHA)
+
+                pygame.draw.rect(
+                    local_overflow_surface, 
+                    color, 
+                    (rect[0] - ui_render_object.overflow_surface_x, rect[1] - ui_render_object.overflow_surface_y, rect[2], rect[3]), 
+                    border_top_left_radius=int(border_radius[0]), 
+                    border_top_right_radius=int(border_radius[1]),
+                    border_bottom_left_radius=int(border_radius[2]),
+                    border_bottom_right_radius=int(border_radius[3])
+                )
+
+                screen.blit(local_overflow_surface, (ui_render_object.overflow_surface_x, ui_render_object.overflow_surface_y))
+            else:
+                pygame.draw.rect(
+                    screen, 
+                    color, 
+                    rect, 
+                    border_top_left_radius=int(border_radius[0]), 
+                    border_top_right_radius=int(border_radius[1]),
+                    border_bottom_left_radius=int(border_radius[2]),
+                    border_bottom_right_radius=int(border_radius[3])
+                )
 
             #pygame.draw.rect(
             #    screen,
@@ -935,7 +1106,16 @@ class UIElement:
         if hasattr(self.element, "modern_text") and len(self.element.modern_text) > 0:
             pass
         else:
-            self.element.draw(screen, ui_render_object, padding, margin, offset, outer_position)
+            if self.ui_render_object_stamp.overflow_surface:
+                element_ui_render_object: UIRenderObject = ui_render_object.copy()
+
+                element_ui_render_object.overflow_surface = self.ui_render_object_stamp.overflow_surface
+                element_ui_render_object.overflow_surface_x = self.ui_render_object_stamp.overflow_surface_x
+                element_ui_render_object.overflow_surface_y = self.ui_render_object_stamp.overflow_surface_y
+
+                self.element.draw(screen, element_ui_render_object, padding, margin, offset, outer_position)
+            else:
+                self.element.draw(screen, ui_render_object, padding, margin, offset, outer_position)
 
         # Set data for flex children
         children_data: dict = {
@@ -956,7 +1136,7 @@ class UIElement:
         children_data["scale"] = scale
 
         # Render sub elements
-        self.__render_sub_elements(screen, children_data, text_align)
+        self.__render_sub_elements(screen, children_data, text_align, ui_render_object)
 
         # Add zindex from child elements
         ui_render_object.render_zindex += self.ui_render_object_stamp.render_zindex

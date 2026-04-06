@@ -203,9 +203,9 @@ class UIPage:
     
     def __is_point_in_element(self, point: tuple[int, int], element: UIElement) -> bool:
         return (
-            point[0] >= element.rendered_x and point[0] <= element.rendered_x + element.actual_size_x
+            point[0] >= element.overflow_x and point[0] <= element.overflow_x + element.overflow_size_x
             and
-            point[1] >= element.rendered_y and point[1] <= element.rendered_y + element.actual_size_y
+            point[1] >= element.overflow_y and point[1] <= element.overflow_y + element.overflow_size_y
         )
     
     def __get_top_element(self, elements: list[UIElement]) -> UIElement | None:

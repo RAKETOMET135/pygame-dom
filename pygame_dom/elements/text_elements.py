@@ -167,7 +167,7 @@ class TextElement:
         
         return None
 
-    def draw_modern_text(self, screen: pygame.display, modern_index: int, rect: tuple[int, int, int, int]) -> None:
+    def draw_modern_text(self, screen: pygame.display, modern_index: int, rect: tuple[int, int, int, int], ui_render_object: UIRenderObject) -> None:
         m_text: tuple[int, str] = self.get_modern_text(modern_index)
 
         if not m_text:
@@ -175,7 +175,22 @@ class TextElement:
         
         m_text_surface: pygame.Surface = self.font.render(m_text[1], True, self.color)
 
-        screen.blit(m_text_surface, rect)
+        if ui_render_object.overflow_surface:
+            local_overflow_surface: pygame.Surface = pygame.Surface(ui_render_object.overflow_surface, pygame.SRCALPHA)
+
+            local_overflow_surface.blit(
+                m_text_surface, 
+                (
+                    rect[0] - ui_render_object.overflow_surface_x,
+                    rect[1] - ui_render_object.overflow_surface_y,
+                    rect[2],
+                    rect[3]
+                )
+            )
+
+            screen.blit(local_overflow_surface, (ui_render_object.overflow_surface_x, ui_render_object.overflow_surface_y))
+        else:
+            screen.blit(m_text_surface, rect)
 
     def draw(self, screen: pygame.Surface, ui_render_object: UIRenderObject, padding: tuple[int, int, int, int], margin: tuple[int, int, int, int], offset: tuple[int, int, int, int], outer_position: tuple[int, int, int, int]) -> None:
         if not self.surface:
@@ -186,23 +201,48 @@ class TextElement:
         self.rect.x = position[0]
         self.rect.y = position[1]
 
-        #self.rect.x = outerPosition[0] + padding[3] * self.scale + int((self.rect.x * self.scale - self.rect.x) / 2)
-        #self.rect.y = outerPosition[1] + padding[0] * self.scale + int((self.rect.y * self.scale - self.rect.y) / 2)
+        if ui_render_object.overflow_surface:
+            local_overflow_surface: pygame.Surface = pygame.Surface(ui_render_object.overflow_surface, pygame.SRCALPHA)
 
-        screen.blit(self.surface, self.rect)
+            local_overflow_surface.blit(
+                self.surface, 
+                (
+                    self.rect[0] - ui_render_object.overflow_surface_x,
+                    self.rect[1] - ui_render_object.overflow_surface_y,
+                    self.rect[2],
+                    self.rect[3]
+                )
+            )
 
-        if self.text_decoration == "underline":
-            pygame.draw.rect(screen, self.text_decoration_color, (
-                self.rect.x, self.rect.y + self.rect.height, self.rect.width, self.text_decoration_thickness
-            ))
-        elif self.text_decoration == "overline":
-            pygame.draw.rect(screen, self.text_decoration_color, (
-                self.rect.x, self.rect.y - self.text_decoration_thickness, self.rect.width, self.text_decoration_thickness
-            ))
-        elif self.text_decoration == "line-through":
-            pygame.draw.rect(screen, self.text_decoration_color, (
-                self.rect.x, self.rect.y + int(self.rect.height / 2), self.rect.width, self.text_decoration_thickness
-            ))
+            if self.text_decoration == "underline":
+                pygame.draw.rect(local_overflow_surface, self.text_decoration_color, (
+                    self.rect.x - ui_render_object.overflow_surface_x, self.rect.y + self.rect.height - ui_render_object.overflow_surface_y, self.rect.width, self.text_decoration_thickness
+                ))
+            elif self.text_decoration == "overline":
+                pygame.draw.rect(local_overflow_surface, self.text_decoration_color, (
+                    self.rect.x - ui_render_object.overflow_surface_x, self.rect.y - self.text_decoration_thickness - ui_render_object.overflow_surface_y, self.rect.width, self.text_decoration_thickness
+                ))
+            elif self.text_decoration == "line-through":
+                pygame.draw.rect(local_overflow_surface, self.text_decoration_color, (
+                    self.rect.x - ui_render_object.overflow_surface_x, self.rect.y + int(self.rect.height / 2) - ui_render_object.overflow_surface_y, self.rect.width, self.text_decoration_thickness
+                ))
+
+            screen.blit(local_overflow_surface, (ui_render_object.overflow_surface_x, ui_render_object.overflow_surface_y))
+        else:
+            screen.blit(self.surface, self.rect)
+
+            if self.text_decoration == "underline":
+                pygame.draw.rect(screen, self.text_decoration_color, (
+                    self.rect.x, self.rect.y + self.rect.height, self.rect.width, self.text_decoration_thickness
+                ))
+            elif self.text_decoration == "overline":
+                pygame.draw.rect(screen, self.text_decoration_color, (
+                    self.rect.x, self.rect.y - self.text_decoration_thickness, self.rect.width, self.text_decoration_thickness
+                ))
+            elif self.text_decoration == "line-through":
+                pygame.draw.rect(screen, self.text_decoration_color, (
+                    self.rect.x, self.rect.y + int(self.rect.height / 2), self.rect.width, self.text_decoration_thickness
+                ))
 
 class H1(TextElement):
     def __init__(self, text: str) -> H1:
@@ -602,7 +642,7 @@ class INPUT(TextElement):
 
         self.caret_position = self.get_caret_position_from_mouse_position(mouse_position)
 
-    def draw_selection(self, screen: pygame.Surface, text_x: int, text_y: int, padding: tuple[int, int, int, int]) -> None:
+    def draw_selection(self, screen: pygame.Surface, text_x: int, text_y: int, padding: tuple[int, int, int, int], ui_render_object: UIRenderObject) -> None:
         if self.selection_end == -1 or self.selection_start == -1 or self.selection_start == self.selection_end:
             return
         
@@ -612,9 +652,18 @@ class INPUT(TextElement):
         start_x: int = text_x + self.font.size(self.text[:start])[0]
         end_x: int = text_x + self.font.size(self.text[:end])[0]
 
-        pygame.draw.rect(screen, (100, 100, 255), (
-            start_x, text_y, end_x - start_x, self.rect.height
-        ))
+        if ui_render_object.overflow_surface:
+            local_overflow_surface: pygame.Surface = pygame.Surface(ui_render_object.overflow_surface, pygame.SRCALPHA)
+
+            pygame.draw.rect(local_overflow_surface, (100, 100, 255), (
+                start_x - ui_render_object.overflow_surface_x, text_y - ui_render_object.overflow_surface_y, end_x - start_x, self.rect.height
+            ))
+
+            screen.blit(local_overflow_surface, (ui_render_object.overflow_surface_x, ui_render_object.overflow_surface_y))
+        else:
+            pygame.draw.rect(screen, (100, 100, 255), (
+                start_x, text_y, end_x - start_x, self.rect.height
+            ))
 
     def draw(self, screen: pygame.Surface, ui_render_object: UIRenderObject, padding: tuple[int, int, int, int], margin: tuple[int, int, int, int], offset: tuple[int, int, int, int], outer_position: tuple[int, int, int, int]) -> None:
         if self.focus and self.surface:
@@ -630,7 +679,7 @@ class INPUT(TextElement):
 
             caret_x: int = all_text_x + before_text_rect.width - 1
             
-            self.draw_selection(screen, all_text_x, all_text_y, padding)
+            self.draw_selection(screen, all_text_x, all_text_y, padding, ui_render_object)
 
             self.padding = padding
 
@@ -643,11 +692,27 @@ class INPUT(TextElement):
                     self.caret_visible = not self.caret_visible
 
                 if self.caret_visible:
-                    pygame.draw.rect(
-                        screen,
-                        (0, 0, 0),
-                        (caret_x, all_text_y, self.caret_size_x, caret_height)
-                    )
+                    if ui_render_object.overflow_surface:
+                        local_overflow_surface: pygame.Surface = pygame.Surface(ui_render_object.overflow_surface, pygame.SRCALPHA)
+
+                        pygame.draw.rect(
+                            local_overflow_surface,
+                            (0, 0, 0),
+                            (
+                                caret_x - ui_render_object.overflow_surface_x, 
+                                all_text_y - ui_render_object.overflow_surface_y, 
+                                self.caret_size_x, 
+                                caret_height
+                            )
+                        )
+
+                        screen.blit(local_overflow_surface, (ui_render_object.overflow_surface_x, ui_render_object.overflow_surface_y))
+                    else:
+                        pygame.draw.rect(
+                            screen,
+                            (0, 0, 0),
+                            (caret_x, all_text_y, self.caret_size_x, caret_height)
+                        )
         
         return super().draw(screen, ui_render_object, padding, margin, offset, outer_position)
 
@@ -699,14 +764,45 @@ class INPUT_BUTTON(TextElement):
 
             color: tuple[int, int, int] = (255, 255, 255)
 
-            if self.active:
-                color = (0, 128, 0)
+            if ui_render_object.overflow_surface:
+                local_overflow_surface: pygame.Surface = pygame.Surface(ui_render_object.overflow_surface)
 
-                inner_radius: int = int(radius / 1.75)
+                if self.active:
+                    color = (0, 128, 0)
 
-                pygame.draw.circle(screen, color, center, inner_radius)
+                    inner_radius: int = int(radius / 1.75)
 
-            pygame.draw.circle(screen, color, center, radius, width=2)
+                    pygame.draw.circle(
+                        local_overflow_surface, 
+                        color, 
+                        (
+                            center[0] - ui_render_object.overflow_surface_x,
+                            center[1] - ui_render_object.overflow_surface_y
+                        ),
+                        inner_radius)
+
+                pygame.draw.circle(
+                    local_overflow_surface, 
+                    color, 
+                    (
+                        center[0] - ui_render_object.overflow_surface_x,
+                        center[1] - ui_render_object.overflow_surface_y
+                    ),
+                    radius, 
+                    width=2
+                )
+
+                screen.blit(local_overflow_surface, (ui_render_object.overflow_surface_x, ui_render_object.overflow_surface_y))
+
+            else:
+                if self.active:
+                    color = (0, 128, 0)
+
+                    inner_radius: int = int(radius / 1.75)
+
+                    pygame.draw.circle(screen, color, center, inner_radius)
+
+                pygame.draw.circle(screen, color, center, radius, width=2)
         elif self.input_type == "checkbox":
             size: int = 0
 
@@ -727,12 +823,36 @@ class INPUT_BUTTON(TextElement):
                 color = (0, 128, 0)
                 border_width = 0
 
-            pygame.draw.rect(screen, color, (position[0], position[1], size, size), width=border_width)
+            if ui_render_object.overflow_surface:
+                local_overflow_surface: pygame.Surface = pygame.Surface(ui_render_object.overflow_surface, pygame.SRCALPHA)
 
-            if self.active:
-                mark_image: pygame.image = get_framework_image("mark")
+                pygame.draw.rect(
+                    local_overflow_surface, 
+                    color, 
+                    (
+                        position[0] - ui_render_object.overflow_surface_x,
+                        position[1] - ui_render_object.overflow_surface_y,
+                        size,
+                        size
+                    )
+                )
 
-                if mark_image and size > 0:
-                    mark_image = pygame.transform.smoothscale(mark_image, (size, size))
+                if self.active:
+                    mark_image: pygame.image = get_framework_image("mark")
+
+                    if mark_image and size > 0:
+                        mark_image = pygame.transform.smoothscale(mark_image, (size, size))
                 
-                    screen.blit(mark_image, (position[0], position[1], size, size))
+                        local_overflow_surface.blit(mark_image, (position[0] - ui_render_object.overflow_surface_x, position[1] - ui_render_object.overflow_surface_y, size, size))
+
+                screen.blit(local_overflow_surface, (ui_render_object.overflow_surface_x, ui_render_object.overflow_surface_y))
+            else:
+                pygame.draw.rect(screen, color, (position[0], position[1], size, size), width=border_width)
+
+                if self.active:
+                    mark_image: pygame.image = get_framework_image("mark")
+
+                    if mark_image and size > 0:
+                        mark_image = pygame.transform.smoothscale(mark_image, (size, size))
+                
+                        screen.blit(mark_image, (position[0], position[1], size, size))

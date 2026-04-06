@@ -486,6 +486,13 @@ class StyleSheet:
                 style["text-decoration-line"] = output_decoration[0]
                 style["text-decoration-color"] = output_decoration[1]
                 style["text-decoration-thickness"] = output_decoration[2]
+            case "overflow":
+                style["overflow-x"] = self.get_pygame_overflow(style_rule.value)
+                style["overflow-y"] = style["overflow-x"]
+            case "overflow-x":
+                style["overflow-x"] = self.get_pygame_overflow(style_rule.value)
+            case "overflow-y":
+                style["overflow-y"] = self.get_pygame_overflow(style_rule.value)
 
     def get_style(self, _type: str, classes: list[str], _id: str, modifiers: dict) -> dict:
         cached_style: dict | None = get_style(_type, classes, _id, modifiers)
@@ -531,7 +538,9 @@ class StyleSheet:
             "text-align": "left",
             "text-decoration-line": "none",
             "text-decoration-color": None,
-            "text-decoration-thickness": 2
+            "text-decoration-thickness": 2,
+            "overflow-x": "visible",
+            "overflow-y": "visible"
         }
 
         if modifiers.get("input_type", "") in ["text", "password", "number"]:
@@ -648,6 +657,12 @@ class StyleSheet:
             return float(unit_string[:len(unit_string) - 1]) * 1_000
 
         return 0
+
+    def get_pygame_overflow(self, overflow: str) -> str:
+        if overflow == "visible" or overflow == "hidden":
+            return overflow
+        
+        return "visible"
 
     def get_pygame_text_decoration_multi(self, multi_text_decoration: str) -> tuple[str, tuple[int, int, int] | tuple[int, int, int, int] | None, int]:
         if multi_text_decoration.startswith("none"):

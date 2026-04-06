@@ -20,7 +20,29 @@ class UIRenderObject:
         self.pad_horizontal = 0
         self.pad_vertical = 0
         self.def_render_x = 0
+        self.overflow_surface = None
+        self.overflow_surface_x = 0
+        self.overflow_surface_y = 0
     
+    def copy(self) -> UIRenderObject:
+        copy: UIRenderObject = UIRenderObject(self.font, self.style_sheet)
+
+        copy.render_line = self.render_line
+        copy.render_line_height = self.render_line_height
+        copy.render_x = self.render_x
+        copy.render_y = self.render_y
+        copy.width = self.width
+        copy.height = self.height
+        copy.render_zindex = self.render_zindex
+        copy.pad_horizontal = self.pad_horizontal
+        copy.pad_vertical = self.pad_vertical
+        copy.def_render_x = self.def_render_x
+        copy.overflow_surface = self.overflow_surface
+        copy.overflow_surface_x = self.overflow_surface_x
+        copy.overflow_surface_y = self.overflow_surface_y
+
+        return copy
+
     def create_stamp(self) -> UIRenderObject:
         stamp: UIRenderObject = UIRenderObject(self.font, self.style_sheet)
 
