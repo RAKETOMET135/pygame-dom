@@ -373,11 +373,208 @@ class UIElement:
         
         self.cursor = system_cursor_id
 
-    def draw(self, screen: pygame.Surface, ui_render_object: UIRenderObject, children_data: dict = {}) -> dict:
-        if not self.element:
-            return {}
+    def __calc_modern_text_dynamic_size(self, element_width: int, element_height: int, setted_width: int, setted_height: int) -> tuple[int, int]:
+        calced_list: list = []
 
-        # Reset one frame variables
+        _i: int = 0
+        for i in range(len(self.element.modern_text) + len(self.children)):
+            m_text: tuple[int, str] | None = self.element.get_modern_text(i)
+
+            if m_text:
+                calced_list.append(m_text)
+
+                _i += 1
+            else:
+                child: UIElement = self.children[i - _i]
+
+                if child.position == "absolute":
+                    continue
+
+                calced_list.append(child)
+
+        if setted_width <= 0:
+            element_width = 0
+            
+        if setted_height <= 0:
+            element_height = 0
+
+        for i, el in enumerate(calced_list):
+            if not isinstance(el, tuple):
+                continue
+
+            m_size: tuple[int, int] = self.element.get_modern_size(el[1])
+
+            if i <= 0:
+                if setted_width <= 0:
+                    element_width = m_size[0]
+                    
+                if setted_height <= 0:
+                    element_height = m_size[1]
+
+                continue
+
+            prev_m_text: tuple[int, str] | None = calced_list[i - 1]
+
+            if isinstance(prev_m_text, tuple):
+                if setted_width <= 0:
+                    element_width += m_size[0]
+                    
+                if setted_height <= 0 and element_height < m_size[1]:
+                    element_height += m_size[1]
+            else:
+                child: UIElement = calced_list[i - 1]
+
+                if child.display_string == "block":
+                    if setted_width <= 0 and m_size[0] > element_width:
+                        element_width = m_size[0]
+                        
+                    if setted_height <= 0:
+                        special_case: bool = False
+
+                        if not (i + 1 > len(calced_list) -1):
+                            next_element: tuple[int, str] | UIElement = calced_list[i + 1]
+
+                            if isinstance(next_element, UIElement) and next_element.display_string == "inline":
+                                special_case = True
+
+                        if not special_case:
+                            element_height += m_size[1]
+                elif child.display_string == "inline":
+                    if setted_height <= 0 and m_size[1] > element_height:
+                        element_height = m_size[1]
+                        
+                    if setted_width <= 0:
+                        element_width += m_size[0]
+        
+        return element_width, element_height
+
+    def __calc_dynamic_size(self, element_width: int, element_height: int, setted_width: int, setted_height: int) -> tuple[int, int]:
+        if hasattr(self.element, "modern_text") and len(self.element.modern_text) > 0:
+            element_width, element_height = self.__calc_modern_text_dynamic_size(element_width, element_height, setted_width, setted_height)
+
+        inline_width: int = 0
+        max_inline_width: int = 0
+
+        inline_height_used: bool = False
+
+        for child in self.children:
+            if child.position == "absolute":
+                continue
+
+            if setted_width <= 0:
+                if child.display_string == "block":
+                    if element_width < child.margin_size_x:
+                        element_width = child.margin_size_x
+                    
+                    inline_width = 0
+                elif child.display_string == "inline":
+                    inline_width += child.margin_size_x
+
+                    if inline_width > max_inline_width:
+                        max_inline_width = inline_width
+
+            if setted_height <= 0:
+                if child.display_string == "block":
+                    element_height += child.margin_size_y
+
+                    inline_height_used = True
+                elif child.display_string == "inline":
+                    if inline_height_used:
+                        inline_height_used = False
+
+                        element_height += child.margin_size_y
+        
+        if setted_width <= 0:
+            element_width += max_inline_width
+        
+        return element_width, element_height
+
+    def __calc_width(self, screen: pygame.Surface, size: tuple, setted_width: int, element_width: int) -> tuple[int, int]:
+        if isinstance(size[0], str) and size[0].endswith("%"):
+            size_x: int = 0
+
+            if self.parent:
+                size_x = self.parent.get_rendered_size_x()
+
+            if size_x <= 0:
+                size_x = screen.get_width()
+            
+            size_x = (size_x / 100) * float(size[0][:len(size[0]) - 1])
+
+            element_width = int(size_x)
+
+            setted_width = size_x
+        else:
+            if size[0] > 0:
+                element_width = size[0]
+
+                setted_width = size[0]
+        
+        return element_width, setted_width
+
+    def __calc_height(self, screen: pygame.Surface, size: tuple, setted_height: int, element_height: int) -> tuple[int, int]:
+        if isinstance(size[1], str) and size[1].endswith("%"):
+            size_y: int = 0
+
+            if self.parent:
+                size_y = self.parent.get_rendered_size_y()
+
+            if size_y <= 0:
+                size_y = screen.get_height()
+            
+            size_y = (size_y / 100) * float(size[1][:len(size[1]) - 1])
+
+            setted_height = size_y
+
+            element_height = int(size_y)
+        else:
+            if size[1] > 0:
+                element_height = size[1]
+
+                setted_height = size[1]
+        
+        return element_height, setted_height
+
+    def __calc_element_size(self, screen: pygame.Surface, size: tuple[int, int]) -> tuple[int, int]:
+        element_width: int = self.element.get_width()
+        element_height: int = self.element.get_height()
+
+        setted_width: int = 0
+        setted_height: int = 0
+
+        element_width, setted_width = self.__calc_width(screen, size, setted_width, element_width)
+        element_height, setted_height = self.__calc_height(screen, size, setted_height, element_height)
+        
+        element_width, element_height = self.__calc_dynamic_size(element_width, element_height, setted_width, setted_height)
+
+        return element_width, element_height
+
+    def __calc_translate(self, translate: tuple, element_width: int, element_height: int, pad_horizontal: int, pad_vertical: int) -> tuple[int, int]:
+        translate_x: int | str = 0
+
+        if translate:
+            translate_x = translate[0]
+
+        if isinstance(translate_x, str):
+            if translate_x.endswith("%"):
+                translate_x = ((element_width + pad_horizontal) / 100) * float(translate_x[:len(translate_x) - 1])
+            else:
+                translate_x = 0
+        
+        translate_y: int | str = 0
+
+        if translate:
+            translate_y = translate[1]
+
+        if isinstance(translate_y, str):
+            if translate_y.endswith("%"):
+                translate_y = ((element_height + pad_vertical) / 100) * float(translate_y[:len(translate_y) - 1])
+            else:
+                translate_y = 0
+        
+        return translate_x, translate_y
+
+    def __handle_element_event_parameters(self) -> None:
         self.is_mouse_enter = False
         self.is_mouse_exit = False
 
@@ -393,6 +590,13 @@ class UIElement:
         if self.is_right_click_turn:
             self.is_right_click_turn = False
             self.is_right_click_held = False
+
+    def draw(self, screen: pygame.Surface, ui_render_object: UIRenderObject, children_data: dict = {}) -> dict:
+        if not self.element:
+            return {}
+
+        # Reset one frame variables
+        self.__handle_element_event_parameters()
 
         # Create data for sub elements
         if self.ui_render_object_stamp:
@@ -458,7 +662,7 @@ class UIElement:
             self.display = Display.FLEX
         
         # Set element to new line
-        if (self.display == Display.BLOCK or self.display == Display.FLEX):
+        if self.display == Display.BLOCK or self.display == Display.FLEX:
             ui_render_object.render_line += 1
             ui_render_object.render_x = 0
             ui_render_object.render_y += ui_render_object.render_line_height
@@ -468,90 +672,7 @@ class UIElement:
                 ui_render_object.render_x = self.parent.get_rendered_x()
 
         # Get element size
-        element_width: int = self.element.get_width()
-        element_height: int = self.element.get_height()
-
-        # Width
-        setted_width: int = 0
-
-        if isinstance(size[0], str) and size[0].endswith("%"):
-            size_x: int = 0
-
-            if self.parent:
-                size_x = self.parent.get_rendered_size_x()
-
-            if size_x <= 0:
-                size_x = screen.get_width()
-            
-            size_x = (size_x / 100) * float(size[0][:len(size[0]) - 1])
-
-            element_width = int(size_x)
-
-            setted_width = size_x
-        else:
-            if size[0] > 0:
-                element_width = size[0]
-
-                setted_width = size[0]
-        
-        # Height
-        setted_height: int = 0
-
-        if isinstance(size[1], str) and size[1].endswith("%"):
-            size_y: int = 0
-
-            if self.parent:
-                size_y = self.parent.get_rendered_size_y()
-
-            if size_y <= 0:
-                size_y = screen.get_height()
-            
-            size_y = (size_y / 100) * float(size[1][:len(size[1]) - 1])
-
-            setted_height = size_y
-
-            element_height = int(size_y)
-        else:
-            if size[1] > 0:
-                element_height = size[1]
-
-                setted_height = size[1]
-        
-        # Change width/height based on children (if not spec setted)
-        inline_width: int = 0
-        max_inline_width: int = 0
-
-        inline_height_used: bool = False
-
-        for child in self.children:
-            if child.position == "absolute":
-                continue
-
-            if setted_width <= 0:
-                if child.display_string == "block":
-                    if element_width < child.margin_size_x:
-                        element_width = child.margin_size_x
-                    
-                    inline_width = 0
-                elif child.display_string == "inline":
-                    inline_width += child.margin_size_x
-
-                    if inline_width > max_inline_width:
-                        max_inline_width = inline_width
-
-            if setted_height <= 0:
-                if child.display_string == "block":
-                    element_height += child.margin_size_y
-
-                    inline_height_used = True
-                elif child.display_string == "inline":
-                    if inline_height_used:
-                        inline_height_used = False
-
-                        element_height += child.margin_size_y
-        
-        if setted_width <= 0:
-            element_width += max_inline_width
+        element_width, element_height = self.__calc_element_size(screen, size)
 
         # Check if render background (checkbox and radio dont have bakground)
         render_background: bool = True
@@ -585,27 +706,7 @@ class UIElement:
         mar_vertical: int = margin[0] + margin[2]
 
         # Get element position
-        translate_x: int | str = 0
-
-        if translate:
-            translate_x = translate[0]
-
-        if isinstance(translate_x, str):
-            if translate_x.endswith("%"):
-                translate_x = ((element_width + pad_horizontal) / 100) * float(translate_x[:len(translate_x) - 1])
-            else:
-                translate_x = 0
-        
-        translate_y: int | str = 0
-
-        if translate:
-            translate_y = translate[1]
-
-        if isinstance(translate_y, str):
-            if translate_y.endswith("%"):
-                translate_y = ((element_height + pad_vertical) / 100) * float(translate_y[:len(translate_y) - 1])
-            else:
-                translate_y = 0
+        translate_x, translate_y = self.__calc_translate(translate, element_width, element_height, pad_horizontal, pad_vertical)
 
         position_x: int = self.__calc_x_position(ui_render_object, margin, padding, offset, screen_rect, element_width) + translate_x
         position_y: int = self.__calc_y_position(ui_render_object, margin, padding, offset, screen_rect, element_height) + translate_y

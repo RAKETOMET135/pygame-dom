@@ -141,6 +141,48 @@
             "code": [
                 "<span class='str'>\"green\"</span> <span class='import'>if</span> score >= <span class='num'>10</span> <span class='import'>else</span> <span class='str'>\"red\"</span>"
             ]
+        },
+        {
+            "type": "subheader",
+            "text": "Custom functions"
+        },
+        {
+            "type": "text",
+            "text": "You can register a function the same way as for events. Registered functions can accept parameters that you can pass inside of state expression. Registered functions can return a value that can be used furthermore in the state expression's operations."
+        },
+        {
+            "type": "text",
+            "text": "Example below shows a simple registered function that writes \"0\" before a number if the number is below 10:"
+        },
+        {
+            "type": "code",
+            "lang": "python",
+            "filename": "app.py",
+            "header_color": "cornflowerblue",
+            "code": [
+                "<span class='func'>@</span><span class='class'>DOM</span><span class='func'>.register<span><span class='paren'>()</span>",
+                "<span class='keyw'>def</span> <span class='func'>adjust_number</span><span class='paren'>(</span><span class='param'>number</span>: <span class='class'>int</span><span class='paren'>)</span> -> <span class='class'>str</span>:",
+                "\t<span class='import'>if</span> <span class='param'>number</span> >= <span class='num'>10</span>:",
+                "\t\t<span class='import'>return</span> <span class='class'>str</span><span class='paren'>(</span><span class='param'>number</span><span class='paren'>)</span>",
+                "",
+                "\t<span class='import'>return</span> <span class='keyw'>f</span><span class='str'>\"0</span><span class='paren'>{</span><span class='param'>number</span><span class='paren'>}</span><span class='str'>\"</span>"
+            ]
+        },
+        {
+            "type": "subheader",
+            "text": "Lists"
+        },
+        {
+            "type": "text",
+            "text": "You can access list values using <span class='param'>[index]</span>."
+        },
+        {
+            "type": "subheader",
+            "text": "Dictionaries"
+        },
+        {
+            "type": "text",
+            "text": "You can access dict values using <span class='param'>dict[\"key\"]</span> or you can use <span class='param'>dict.get(\"key\", default_value)</span>."
         }
     ]
 }

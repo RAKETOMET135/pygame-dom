@@ -44,6 +44,16 @@ class StyleSheet:
         is_file_loaded: bool = False
         css_content: str = ""
 
+        if css_file_path == "-/-te-/-":
+            with resources.files("pygame_dom.images").joinpath("mark.png").open("rb") as file:
+                image: pygame.Surface = pygame.image.load(file).convert_alpha()
+
+                add_framework_image(image, "mark")
+        
+            self.__load_default_css()
+
+            return
+
         try:
             with open(css_file_path, "r") as file:
                 css_content = file.read()

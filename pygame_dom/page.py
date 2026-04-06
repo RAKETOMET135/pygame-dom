@@ -330,6 +330,10 @@ class UIPage:
             events (list[pygame.event.Event]): List of events from pygame ("pygame.event.get()")
         """
 
+        if not self.style_sheet:
+            self.style_sheet = StyleSheet("-/-te-/-", self.state_parser)
+            self.ui_render_object.style_sheet = self.style_sheet
+
         self.ui_render_object.reset()
 
         mouse_position: tuple[int, int] = pygame.mouse.get_pos()

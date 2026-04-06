@@ -51,6 +51,12 @@ SAFE_FUNCTIONS: Final[dict] = {
     "format": format
 }
 
+SAFE_METHODS: Final[dict] = {
+    dict: {"get", "keys", "values", "items"},
+    list: {"append", "count", "index"},
+    str: {"lower", "upper", "strip", "split"}
+}
+
 def safe_eval_wrapper(expr: str, involved_states: list[str]) -> Any:
     context: dict = {**SAFE_FUNCTIONS}
 
@@ -118,6 +124,8 @@ class SafeEvaluator(ast.NodeVisitor):
         return getattr(value, attr)
     
     def visit_Call(self, node: Any) -> Any:
+        method: Callable = None
+
         if isinstance(node.func, ast.Attribute):
             obj: Any = self.visit(node.func.value)
             method_name: str = node.func.attr
@@ -125,15 +133,31 @@ class SafeEvaluator(ast.NodeVisitor):
             if method_name.startswith("_") or method_name.startswith("__"):
                 raise ValueError("Cannot call method with _ or __")
 
-            method: Callable = getattr(obj, method_name)
+            allowed: list[str] = SAFE_METHODS.get(type(obj), set())
+
+            if method_name not in allowed:
+                raise ValueError(f"Method {method_name} not allowed for {type(obj)}")
+
+            method = getattr(obj, method_name)
         else:
             method = self.visit(node.func)
 
             if method not in self.context.values():
                 raise ValueError(f"Function is not supported")
 
-        args = [self.visit(arg) for arg in node.args]
-        return method(*args)
+        args: list = [self.visit(arg) for arg in node.args]
+
+        kwargs: dict = {}
+        for kw in node.keywords:
+            if kw.arg is None:
+                raise ValueError("**kwargs unpacking is not allowed")
+            
+            kwargs[kw.arg] = self.visit(kw.value)
+
+        if not callable(method):
+            raise TypeError(f"{method} is not callable")
+        
+        return method(*args, **kwargs)
     
     def visit_IfExp(self, node: Any) -> Any:
         condition: Any = self.visit(node.test)
