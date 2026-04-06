@@ -188,9 +188,35 @@ class TextElement:
                 )
             )
 
+            if self.text_decoration == "underline":
+                pygame.draw.rect(local_overflow_surface, self.text_decoration_color, (
+                    rect[0] - ui_render_object.overflow_surface_x, rect[1] + rect[3] - ui_render_object.overflow_surface_y, rect[2], self.text_decoration_thickness
+                ))
+            elif self.text_decoration == "overline":
+                pygame.draw.rect(local_overflow_surface, self.text_decoration_color, (
+                    rect[0] - ui_render_object.overflow_surface_x, rect[1] - self.text_decoration_thickness - ui_render_object.overflow_surface_y, rect[2], self.text_decoration_thickness
+                ))
+            elif self.text_decoration == "line-through":
+                pygame.draw.rect(local_overflow_surface, self.text_decoration_color, (
+                    rect[0] - ui_render_object.overflow_surface_x, rect[1] + int(rect[3] / 2) - ui_render_object.overflow_surface_y, rect[2], self.text_decoration_thickness
+            ))
+
             screen.blit(local_overflow_surface, (ui_render_object.overflow_surface_x, ui_render_object.overflow_surface_y))
         else:
             screen.blit(m_text_surface, rect)
+        
+            if self.text_decoration == "underline":
+                pygame.draw.rect(screen, self.text_decoration_color, (
+                    rect[0], rect[1] + rect[3], rect[2], self.text_decoration_thickness
+                ))
+            elif self.text_decoration == "overline":
+                pygame.draw.rect(screen, self.text_decoration_color, (
+                    rect[0], rect[1] - self.text_decoration_thickness, rect[2], self.text_decoration_thickness
+                ))
+            elif self.text_decoration == "line-through":
+                pygame.draw.rect(screen, self.text_decoration_color, (
+                    rect[0], rect[1] + int(rect[3] / 2), rect[2], self.text_decoration_thickness
+            ))
 
     def draw(self, screen: pygame.Surface, ui_render_object: UIRenderObject, padding: tuple[int, int, int, int], margin: tuple[int, int, int, int], offset: tuple[int, int, int, int], outer_position: tuple[int, int, int, int]) -> None:
         if not self.surface:
