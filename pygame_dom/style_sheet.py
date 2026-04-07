@@ -444,16 +444,16 @@ class StyleSheet:
                 style["position"] = self.get_pygame_position(style_rule.value)
             case "left":
                 style["left"] = self.get_pygame_onevalue_size(style_rule.value)
-                style["right"] = -1
+                style["right"] = None
             case "top":
                 style["top"] = self.get_pygame_onevalue_size(style_rule.value)
-                style["bottom"] = -1
+                style["bottom"] = None
             case "right":
                 style["right"] = self.get_pygame_onevalue_size(style_rule.value)
-                style["left"] = -1
+                style["left"] = None
             case "bottom":
                 style["bottom"] = self.get_pygame_onevalue_size(style_rule.value)
-                style["top"] = -1
+                style["top"] = None
             case "width":
                 style["width"] = self.get_pygame_onevalue_size(style_rule.value)
             case "height":
@@ -526,10 +526,10 @@ class StyleSheet:
             "border-color": (0, 0, 0, 0),
             "border-width": 0,
             "position": "static",
-            "left": -1,
-            "top": -1,
-            "right": -1,
-            "bottom": -1,
+            "left": None,
+            "top": None,
+            "right": None,
+            "bottom": None,
             "width": 0,
             "height": 0,
             "display": "block",

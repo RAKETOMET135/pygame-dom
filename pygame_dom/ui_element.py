@@ -243,9 +243,9 @@ class UIElement:
 
     def __get_offset(self, style: dict, position: str, scale: float) -> tuple[int, int, int, int]:
         if position == "static":
-            return (-1, -1, -1, -1)
+            return (None, None, None, None)
 
-        return (style.get("left", -1), style.get("top", -1), style.get("right", -1), style.get("bottom", -1))
+        return (style.get("left", None), style.get("top", None), style.get("right", None), style.get("bottom", None))
 
     def __get_size(self, style: dict) -> tuple[int, int]:
         return (style.get("width", 0), style.get("height", 0))
@@ -257,8 +257,8 @@ class UIElement:
         x_position: int = ui_render_object.render_x + margin[3]
 
         width: int = ui_render_object.width
-        left: int | str = offset[0]
-        right: int | str = offset[2]
+        left: int | str | None = offset[0]
+        right: int | str | None = offset[2]
 
         if width <= 0:
             width = screen_rect.width
@@ -292,10 +292,14 @@ class UIElement:
             right = (width / 100) * right
             width += x_position
 
-        if left >= 0 and left >= margin[3]:
+        if (left or left == 0) and left < 0:
+            x_position += left
+        elif (left or left == 0) and left >= margin[3]:
             x_position += left - margin[3]
-        elif right >= 0:
-            if right < margin[1]:
+        elif (right or right == 0):
+            if right < 0:
+                x_position = width - (element_width + padding[1] + right + padding[3])
+            elif right < margin[1]:
                 x_position = width - (element_width + margin[1] + padding[1] + padding[3])
             else:
                 x_position = width - (element_width + padding[1] + right + padding[3])
@@ -309,8 +313,8 @@ class UIElement:
         y_position: int = ui_render_object.render_y + margin[0]
 
         height: int = ui_render_object.height
-        top: int | str = offset[1]
-        bottom: int | str = offset[3]
+        top: int | str | None = offset[1]
+        bottom: int | str | None = offset[3]
 
         if height <= 0:
             height = screen_rect.height
@@ -344,10 +348,14 @@ class UIElement:
             bottom = (height / 100) * bottom
             height += y_position
 
-        if top >= 0 and top >= margin[0]:
+        if (top or top == 0) and top < 0:
+            y_position += top
+        elif (top or top == 0) and top >= margin[0]:
             y_position += top - margin[0]
-        elif bottom >= 0:
-            if bottom < margin[2]:
+        elif (bottom or bottom == 0):
+            if bottom < 0:
+                y_position = height - (element_height + padding[2] + bottom + padding[0])
+            elif bottom < margin[2]:
                 y_position = height - (element_height + margin[2] + padding[2] + padding[0])
             else:
                 y_position = height - (element_height + padding[2] + bottom + padding[0])
@@ -779,10 +787,10 @@ class UIElement:
             new_x = position_x
         elif condition_2[0]:
             new_width = abs(point_1[0] - point_4[0])
-            new_x = position_x + abs(point_1[0] + point_3[0])
+            new_x = position_x + abs(point_1[0] - point_3[0])
         elif point_3[0] < point_1[0] and point_4[0] > point_2[0]:
             new_width = abs(point_1[0] - point_2[0])
-            new_x = abs(point_1[0] + point_3[0])
+            new_x = position_x + abs(point_1[0] - point_3[0])
 
         if condition_1[1] and condition_2[1]:
             new_height = self.actual_size_y
@@ -792,10 +800,10 @@ class UIElement:
             new_y = position_y
         elif condition_2[1]:
             new_height = abs(point_1[1] - point_4[1])
-            new_y = position_y + abs(point_1[1] + point_3[1])
+            new_y = position_y + abs(point_1[1] - point_3[1])
         elif point_3[1] < point_1[1] and point_4[1] > point_2[1]:
             new_height = abs(point_1[1] - point_2[1])
-            new_y = abs(point_1[1] + point_3[1])
+            new_y = position_y + abs(point_1[1] - point_3[1])
         
         self.overflow_size_x = new_width
         self.overflow_size_y = new_height
@@ -821,10 +829,10 @@ class UIElement:
             new_x = position_x
         elif condition_2[0]:
             new_width = abs(point_1[0] - point_4[0])
-            new_x = position_x + abs(point_1[0] + point_3[0])
+            new_x = position_x + abs(point_1[0] - point_3[0])
         elif point_3[0] < point_1[0] and point_4[0] > point_2[0]:
             new_width = abs(point_1[0] - point_2[0])
-            new_x = abs(point_1[0] + point_3[0])
+            new_x = position_x + abs(point_1[0] - point_3[0])
 
         if condition_1[1] and condition_2[1]:
             new_height = self.actual_size_y
@@ -834,10 +842,10 @@ class UIElement:
             new_y = position_y
         elif condition_2[1]:
             new_height = abs(point_1[1] - point_4[1])
-            new_y = position_y + abs(point_1[1] + point_3[1])
+            new_y = position_y + abs(point_1[1] - point_3[1])
         elif point_3[1] < point_1[1] and point_4[1] > point_2[1]:
             new_height = abs(point_1[1] - point_2[1])
-            new_y = abs(point_1[1] + point_3[1])
+            new_y = position_y + abs(point_1[1] - point_3[1]) - 1
         
         self.ui_render_object_stamp.overflow_surface = (new_width, new_height)
         self.ui_render_object_stamp.overflow_surface_x = new_x
