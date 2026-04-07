@@ -698,7 +698,7 @@ class INPUT(TextElement):
         end_x: int = text_x + self.font.size(self.text[:end])[0] - self.offset_x
 
         if ui_render_object.overflow_surface:
-            local_overflow_surface: pygame.Surface = pygame.Surface(int(ui_render_object.overflow_surface[0], ui_render_object.overflow_surface[1]), pygame.SRCALPHA)
+            local_overflow_surface: pygame.Surface = pygame.Surface(int(ui_render_object.overflow_surface[0]), int(ui_render_object.overflow_surface[1]), pygame.SRCALPHA)
 
             pygame.draw.rect(local_overflow_surface, (100, 100, 255), (
                 int(start_x - ui_render_object.overflow_surface_x), int(text_y - ui_render_object.overflow_surface_y), int(end_x - start_x), int(self.rect.height)
