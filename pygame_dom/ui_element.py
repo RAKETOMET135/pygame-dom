@@ -1090,7 +1090,13 @@ class UIElement:
                 if ui_render_object.overflow_surface[0] <= 0 or ui_render_object.overflow_surface[1] <= 0:
                     pass
 
-                local_overflow_surface = pygame.Surface((int(ui_render_object.overflow_surface[0]), int(ui_render_object.overflow_surface[1])), pygame.SRCALPHA)
+                local_overflow_surface = pygame.Surface(
+                    (
+                        int(ui_render_object.overflow_surface[0]), 
+                        int(ui_render_object.overflow_surface[1])
+                    ), 
+                    pygame.SRCALPHA
+                )
 
                 pygame.draw.rect(
                     local_overflow_surface, 
@@ -1153,8 +1159,6 @@ class UIElement:
                         border_bottom_right_radius=int(border_radius[3] + radius_4),
                         width=int(outline_width)
                     )
-                
-                screen.blit(local_overflow_surface, (int(ui_render_object.overflow_surface_x), int(ui_render_object.overflow_surface_y)))
         elif render_background:
             if self.border_width > 0 and border_color:
                 pygame.draw.rect(
@@ -1194,6 +1198,9 @@ class UIElement:
                     border_bottom_right_radius=(border_radius[3] + radius_4),
                     width=int(outline_width)
                 )
+
+        if local_overflow_surface:
+            screen.blit(local_overflow_surface, (int(ui_render_object.overflow_surface_x), int(ui_render_object.overflow_surface_y)))
 
         if hasattr(self.element, "modern_text") and len(self.element.modern_text) > 0:
             pass
