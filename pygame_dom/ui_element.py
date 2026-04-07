@@ -199,10 +199,10 @@ class UIElement:
         width: int = self.__get_relative_width(screen)
         height: int = self.__get_relative_height(screen)
 
-        pad_left = self.__get_percent(pad_left, width)
-        pad_right = self.__get_percent(pad_right, width)
-        pad_top = self.__get_percent(pad_top, height)
-        pad_bottom = self.__get_percent(pad_bottom, height)
+        pad_left = self.__get_percent(pad_left, width) + self.border_width
+        pad_right = self.__get_percent(pad_right, width) + self.border_width
+        pad_top = self.__get_percent(pad_top, height) + self.border_width
+        pad_bottom = self.__get_percent(pad_bottom, height) + self.border_width
 
         return (pad_top, pad_right, pad_bottom, pad_left)
 
@@ -999,10 +999,6 @@ class UIElement:
             if element_height < 20:
                 element_height = 20
 
-        # Make border change thw size too
-        element_width += self.border_width * 2
-        element_height += self.border_width * 2
-
         # Update elements using flex data
         flex_vertical_stretch: bool = children_data.get("vertical_stretch", False)
 
@@ -1051,13 +1047,11 @@ class UIElement:
         self.actual_size_y = int((element_height) * scale) + int(pad_vertical * scale)
         self.margin_size_x = self.actual_size_x + int(mar_horizontal * scale)
         self.margin_size_y = self.actual_size_y + int(mar_vertical * scale)
-        self.rendered_size_x -= self.border_width * 2
-        self.rendered_size_y -= self.border_width * 2
 
-        self.ui_render_object_stamp.render_x = position_x + padding[3] * (scale / parent_scale) + self.border_width
-        self.ui_render_object_stamp.render_y = position_y + padding[0] * (scale / parent_scale) + self.border_width
-        self.ui_render_object_stamp.width = self.actual_size_x - self.border_width * 2
-        self.ui_render_object_stamp.height = self.actual_size_y - self.border_width * 2
+        self.ui_render_object_stamp.render_x = position_x + padding[3] * (scale / parent_scale)
+        self.ui_render_object_stamp.render_y = position_y + padding[0] * (scale / parent_scale)
+        self.ui_render_object_stamp.width = self.actual_size_x
+        self.ui_render_object_stamp.height = self.actual_size_y
         self.ui_render_object_stamp.pad_horizontal = pad_horizontal
         self.ui_render_object_stamp.pad_vertical = pad_vertical
         self.ui_render_object_stamp.def_render_x = self.ui_render_object_stamp.render_x
@@ -1078,10 +1072,10 @@ class UIElement:
         # Render background for element
         if bg and render_background:
             rect: tuple[int, int, int, int] = (
-                int(position_x) + self.border_width,
-                int(position_y) + self.border_width,
-                self.actual_size_x - self.border_width * 2,
-                self.actual_size_y - self.border_width * 2
+                int(position_x),
+                int(position_y),
+                self.actual_size_x,
+                self.actual_size_y
             )
 
             color: tuple = tuple(int(c) for c in style.get("background-color", (0, 0, 0, 0)))
@@ -1107,15 +1101,15 @@ class UIElement:
                         local_overflow_surface,
                         border_color,
                         (
-                            rect[0] - self.border_width - ui_render_object.overflow_surface_x,
-                            rect[1] - self.border_width - ui_render_object.overflow_surface_y,
-                            rect[2] + 2 * self.border_width,
-                            rect[3] + 2 * self.border_width
+                            rect[0] - ui_render_object.overflow_surface_x,
+                            rect[1] - ui_render_object.overflow_surface_y,
+                            rect[2],
+                            rect[3]
                         ),
-                        border_top_left_radius=border_radius[0] + self.border_width, 
-                        border_top_right_radius=border_radius[1] + self.border_width,
-                        border_bottom_left_radius=border_radius[2] + self.border_width,
-                        border_bottom_right_radius=border_radius[3] + self.border_width,
+                        border_top_left_radius=border_radius[0], 
+                        border_top_right_radius=border_radius[1],
+                        border_bottom_left_radius=border_radius[2],
+                        border_bottom_right_radius=border_radius[3],
                         width=self.border_width
                     )
 
@@ -1136,15 +1130,15 @@ class UIElement:
                         screen,
                         border_color,
                         (
-                            rect[0] - self.border_width,
-                            rect[1] - self.border_width,
-                            rect[2] + 2 * self.border_width,
-                            rect[3] + 2 * self.border_width
+                            rect[0],
+                            rect[1],
+                            rect[2],
+                            rect[3]
                         ),
-                        border_top_left_radius=border_radius[0] + self.border_width, 
-                        border_top_right_radius=border_radius[1] + self.border_width,
-                        border_bottom_left_radius=border_radius[2] + self.border_width,
-                        border_bottom_right_radius=border_radius[3] + self.border_width,
+                        border_top_left_radius=border_radius[0], 
+                        border_top_right_radius=border_radius[1],
+                        border_bottom_left_radius=border_radius[2],
+                        border_bottom_right_radius=border_radius[3],
                         width=self.border_width
                     )
 
