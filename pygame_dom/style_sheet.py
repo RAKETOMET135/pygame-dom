@@ -497,6 +497,10 @@ class StyleSheet:
                 style["border-color"] = self.get_pygame_color(style_rule.value)
             case "border-width":
                 style["border-width"] = self.get_pygame_onevalue_size(style_rule.value)
+            case "outline-color":
+                style["outline-color"] = self.get_pygame_color(style_rule.value)
+            case "outline-width":
+                style["outline-width"] = self.get_pygame_onevalue_size(style_rule.value)
 
     def get_style(self, _type: str, classes: list[str], _id: str, modifiers: dict) -> dict:
         cached_style: dict | None = get_style(_type, classes, _id, modifiers)
@@ -544,7 +548,9 @@ class StyleSheet:
             "text-decoration-color": None,
             "text-decoration-thickness": 2,
             "overflow-x": "visible",
-            "overflow-y": "visible"
+            "overflow-y": "visible",
+            "outline-color": (0, 0, 0, 0),
+            "outline-width": 0
         }
 
         if modifiers.get("input_type", "") in ["text", "password", "number"]:
@@ -555,7 +561,10 @@ class StyleSheet:
                 continue
 
             for style_rule in tag_style.style_rules:
-                self.apply_style_rule(style, style_rule)
+                if modifiers.get("input_type", "") in ["radio", "checkbox"] and style_rule.name == "width":
+                    self.apply_style_rule(style, StyleRule("width", "22px"))
+                else:
+                    self.apply_style_rule(style, style_rule)
 
             break
 

@@ -551,7 +551,7 @@ class UIElement:
 
             if size_x <= 0:
                 size_x = screen.get_width()
-            
+
             size_x = (size_x / 100) * float(size[0][:len(size[0]) - 1])
 
             element_width = int(size_x)
@@ -930,6 +930,8 @@ class UIElement:
         self.position = style.get("position", "static")
         self.border_width = style.get("border-width", 0)
         border_color: tuple = style.get("border-color", None)
+        outline_width: int = style.get("outline-width", 0)
+        outline_color: tuple = style.get("outline-color", (0, 0, 0, 0))
 
         text_align: str = style.get("text-align", "left")
 
@@ -1033,10 +1035,10 @@ class UIElement:
 
         # Update data for sub element rendering
         outer_position: tuple[int, int, int, int] = (
-            position_x + self.border_width,
-            position_y + self.border_width,
-            self.actual_size_x - self.border_width * 2,
-            self.actual_size_y - self.border_width * 2
+            position_x,
+            position_y,
+            self.actual_size_x,
+            self.actual_size_y
         )
 
         self.rendered_x = position_x
@@ -1069,22 +1071,26 @@ class UIElement:
             self.ui_render_object_stamp.render_x = text_position[0] + self.element.get_width()
             self.ui_render_object_stamp.render_line_height = self.element.get_height()
 
+        # Create rect for rendering background, border and outline
+        rect: tuple[int, int, int, int] = (
+            int(position_x),
+            int(position_y),
+            self.actual_size_x,
+            self.actual_size_y
+        )
+
+        # Prepare local overflow surface for rendering if needed
+        local_overflow_surface: pygame.Surface | None = None
+
         # Render background for element
         if bg and render_background:
-            rect: tuple[int, int, int, int] = (
-                int(position_x),
-                int(position_y),
-                self.actual_size_x,
-                self.actual_size_y
-            )
-
             color: tuple = tuple(int(c) for c in style.get("background-color", (0, 0, 0, 0)))
 
             if ui_render_object.overflow_surface:
                 if ui_render_object.overflow_surface[0] <= 0 or ui_render_object.overflow_surface[1] <= 0:
                     pass
 
-                local_overflow_surface: pygame.Surface = pygame.Surface(ui_render_object.overflow_surface, pygame.SRCALPHA)
+                local_overflow_surface = pygame.Surface(ui_render_object.overflow_surface, pygame.SRCALPHA)
 
                 pygame.draw.rect(
                     local_overflow_surface, 
@@ -1095,7 +1101,20 @@ class UIElement:
                     border_bottom_left_radius=int(border_radius[2]),
                     border_bottom_right_radius=int(border_radius[3])
                 )
+            else:
+                pygame.draw.rect(
+                    screen, 
+                    color, 
+                    rect, 
+                    border_top_left_radius=int(border_radius[0]), 
+                    border_top_right_radius=int(border_radius[1]),
+                    border_bottom_left_radius=int(border_radius[2]),
+                    border_bottom_right_radius=int(border_radius[3])
+                )
 
+        # Render border and outline
+        if ui_render_object.overflow_surface and render_background:
+            if ui_render_object.overflow_surface[0] <= 0 or ui_render_object.overflow_surface[1] <= 0:
                 if self.border_width > 0 and border_color:
                     pygame.draw.rect(
                         local_overflow_surface,
@@ -1112,35 +1131,69 @@ class UIElement:
                         border_bottom_right_radius=border_radius[3],
                         width=self.border_width
                     )
+                
+                if outline_width > 0 and outline_color:
+                    radius_1: int = outline_width if border_radius[0] > 0 else 0
+                    radius_2: int = outline_width if border_radius[1] > 0 else 0
+                    radius_3: int = outline_width if border_radius[2] > 0 else 0
+                    radius_4: int = outline_width if border_radius[3] > 0 else 0
 
-                screen.blit(local_overflow_surface, (ui_render_object.overflow_surface_x, ui_render_object.overflow_surface_y))
-            else:
-                pygame.draw.rect(
-                    screen, 
-                    color, 
-                    rect, 
-                    border_top_left_radius=int(border_radius[0]), 
-                    border_top_right_radius=int(border_radius[1]),
-                    border_bottom_left_radius=int(border_radius[2]),
-                    border_bottom_right_radius=int(border_radius[3])
-                )
-
-                if self.border_width > 0 and border_color:
                     pygame.draw.rect(
-                        screen,
-                        border_color,
+                        local_overflow_surface,
+                        outline_color,
                         (
-                            rect[0],
-                            rect[1],
-                            rect[2],
-                            rect[3]
+                            rect[0] - outline_width - ui_render_object.overflow_surface_x,
+                            rect[1] - outline_width - ui_render_object.overflow_surface_y,
+                            rect[2] + 2 * outline_width,
+                            rect[3] + 2 * outline_width
                         ),
-                        border_top_left_radius=border_radius[0], 
-                        border_top_right_radius=border_radius[1],
-                        border_bottom_left_radius=border_radius[2],
-                        border_bottom_right_radius=border_radius[3],
-                        width=self.border_width
+                        border_top_left_radius=border_radius[0] + radius_1, 
+                        border_top_right_radius=border_radius[1] + radius_2,
+                        border_bottom_left_radius=border_radius[2] + radius_3,
+                        border_bottom_right_radius=border_radius[3] + radius_4,
+                        width=outline_width
                     )
+                
+                screen.blit(local_overflow_surface, (ui_render_object.overflow_surface_x, ui_render_object.overflow_surface_y))
+        elif render_background:
+            if self.border_width > 0 and border_color:
+                pygame.draw.rect(
+                    screen,
+                    border_color,
+                    (
+                        rect[0],
+                        rect[1],
+                        rect[2],
+                        rect[3]
+                    ),
+                    border_top_left_radius=border_radius[0], 
+                    border_top_right_radius=border_radius[1],
+                    border_bottom_left_radius=border_radius[2],
+                    border_bottom_right_radius=border_radius[3],
+                    width=self.border_width
+                )
+                
+            if outline_width > 0 and outline_color:
+                radius_1: int = outline_width if border_radius[0] > 0 else 0
+                radius_2: int = outline_width if border_radius[1] > 0 else 0
+                radius_3: int = outline_width if border_radius[2] > 0 else 0
+                radius_4: int = outline_width if border_radius[3] > 0 else 0
+
+                pygame.draw.rect(
+                    screen,
+                    outline_color,
+                    (
+                        rect[0] - outline_width,
+                        rect[1] - outline_width,
+                        rect[2] + 2 * outline_width,
+                        rect[3] + 2 * outline_width
+                    ),
+                    border_top_left_radius=border_radius[0] + radius_1, 
+                    border_top_right_radius=border_radius[1] + radius_2,
+                    border_bottom_left_radius=border_radius[2] + radius_3,
+                    border_bottom_right_radius=border_radius[3] + radius_4,
+                    width=outline_width
+                )
 
         if hasattr(self.element, "modern_text") and len(self.element.modern_text) > 0:
             pass

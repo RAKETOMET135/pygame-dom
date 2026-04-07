@@ -227,11 +227,14 @@ class TextElement:
         self.rect.x = position[0]
         self.rect.y = position[1]
 
+        if hasattr(self, "offset_x"):
+            self.rect.x -= self.offset_x
+
         if ui_render_object.overflow_surface:
-            local_overflow_surface: pygame.Surface = pygame.Surface(ui_render_object.overflow_surface, pygame.SRCALPHA)
+            local_overflow_surface: pygame.Surface = pygame.Surface((ui_render_object.overflow_surface[0], ui_render_object.overflow_surface[1]), pygame.SRCALPHA)
 
             local_overflow_surface.blit(
-                self.surface, 
+                self.surface,
                 (
                     self.rect[0] - ui_render_object.overflow_surface_x,
                     self.rect[1] - ui_render_object.overflow_surface_y,
@@ -322,6 +325,11 @@ class INPUT(TextElement):
         self.input_type = input_type
         self.prev_text = ""
         self.secret = ""
+        self.offset_x = 0
+        self.prev_caret_x = 0
+        self.calc_offset = False
+        self.all_text_x = 0
+        self.actual_input_text_max_width = 0
 
         self.select_mode = False
 
@@ -445,7 +453,7 @@ class INPUT(TextElement):
             self.secret = self.secret[:start] + copied_text + self.secret[end:]
             self.caret_position = start + len(copied_text)
             self.selection_start = self.selection_end = -1
-        
+
         self.__handle_bind_event()
 
     def move_caret_right(self, is_shift: bool) -> None:
@@ -607,6 +615,8 @@ class INPUT(TextElement):
             
             self.selection_start = self.caret_position
             self.selection_end = self.caret_position
+
+            self.calc_offset = True
         else:
             start: int = min(self.selection_start, self.selection_end)
             end: int = max(self.selection_start, self.selection_end)
@@ -615,6 +625,8 @@ class INPUT(TextElement):
             self.secret = self.secret[:start] + self.secret[end:]
             self.caret_position = start
             self.selection_start = self.selection_end = -1
+
+            self.calc_offset = True
         
         self.__handle_bind_event()
 
@@ -668,6 +680,13 @@ class INPUT(TextElement):
 
         self.caret_position = self.get_caret_position_from_mouse_position(mouse_position)
 
+        before_text_surface: pygame.Surface = self.font.render(self.text[:self.caret_position], True, (0, 0, 0))
+        before_text_rect: pygame.Rect = before_text_surface.get_rect()
+
+        n_caret_x: int = self.all_text_x + before_text_rect.width - 1
+
+        self.prev_caret_x = n_caret_x
+
     def draw_selection(self, screen: pygame.Surface, text_x: int, text_y: int, padding: tuple[int, int, int, int], ui_render_object: UIRenderObject) -> None:
         if self.selection_end == -1 or self.selection_start == -1 or self.selection_start == self.selection_end:
             return
@@ -675,8 +694,8 @@ class INPUT(TextElement):
         start: int = min(self.selection_start, self.selection_end)
         end: int = max(self.selection_start, self.selection_end)
 
-        start_x: int = text_x + self.font.size(self.text[:start])[0]
-        end_x: int = text_x + self.font.size(self.text[:end])[0]
+        start_x: int = text_x + self.font.size(self.text[:start])[0] - self.offset_x
+        end_x: int = text_x + self.font.size(self.text[:end])[0] - self.offset_x
 
         if ui_render_object.overflow_surface:
             local_overflow_surface: pygame.Surface = pygame.Surface(ui_render_object.overflow_surface, pygame.SRCALPHA)
@@ -698,16 +717,40 @@ class INPUT(TextElement):
             all_text_x: int = position[0]
             all_text_y: int = position[1]
 
+            self.all_text_x: int = all_text_x
+
             before_text_surface: pygame.Surface = self.font.render(self.text[:self.caret_position], True, (0, 0, 0))
             before_text_rect: pygame.Rect = before_text_surface.get_rect()
             
             caret_height: int = before_text_rect.height
 
-            caret_x: int = all_text_x + before_text_rect.width - 1
-            
-            self.draw_selection(screen, all_text_x, all_text_y, padding, ui_render_object)
+            caret_x: int = all_text_x + before_text_rect.width - 1 - self.offset_x
+            n_caret_x: int = all_text_x + before_text_rect.width - 1
 
             self.padding = padding
+
+            actual_input_text_max_width: int = outer_position[2] - padding[1] - padding[3]
+
+            self.actual_input_text_max_width = actual_input_text_max_width
+
+            if before_text_rect.width > actual_input_text_max_width and self.prev_caret_x < n_caret_x or self.calc_offset and before_text_rect.width > actual_input_text_max_width:
+                self.offset_x = before_text_rect.width - actual_input_text_max_width
+            elif before_text_rect.width < self.offset_x and self.prev_caret_x > n_caret_x or self.calc_offset and before_text_rect.width < self.offset_x:
+                self.offset_x = before_text_rect.width
+
+            self.calc_offset = False
+            self.prev_caret_x = n_caret_x
+
+            if self.offset_x < 0:
+                self.offset_x = 0
+
+            render_offset_overflow_right = padding[1]
+            render_offset_overflow_left = padding[3]
+
+            ui_render_object.overflow_surface = (ui_render_object.overflow_surface[0] - (render_offset_overflow_left + render_offset_overflow_right), ui_render_object.overflow_surface[1])
+            ui_render_object.overflow_surface_x += render_offset_overflow_left
+
+            self.draw_selection(screen, all_text_x, all_text_y, padding, ui_render_object)
 
             if self.selection_start == -1 or self.selection_end == -1 or self.selection_start == self.selection_end:
                 time: int = pygame.time.get_ticks()

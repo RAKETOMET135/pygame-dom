@@ -262,6 +262,30 @@
             "text": "<span class='val'>border-width</span>"
         },
         {
+            "type": "subsubheader",
+            "text": "Outline color"
+        },
+        {
+            "type": "text",
+            "text": "You can use this property to change the element's outline color. Color supports <span class='param'>CSS color names</span>, <span class='param'>rgb</span>, <span class='param'>rgba</span> and <span class='param'>hex</span>."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>outline-color</span>"
+        },
+        {
+            "type": "subsubheader",
+            "text": "Outline width"
+        },
+        {
+            "type": "text",
+            "text": "You can use this property to change the element's outline width. This property supports only pixels (<span class='param'>px</span>)."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>outline-width</span>"
+        },
+        {
             "type": "subheader",
             "text": "Spacing"
         },

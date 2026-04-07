@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pygame-dom"
-version = "0.1.5"
+version = "0.1.6"
 description = "UI framework for creating pygame UI using HTML and CSS"
 authors = [
     { name = "RAKETOMET135" }
