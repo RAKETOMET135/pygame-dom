@@ -754,6 +754,15 @@ class StyleSheet:
     def get_pygame_translate(self, translate: str) -> tuple[int | str, int | str]:
         params: list[int | str] = []
 
+        if translate.startswith("0"):
+            translate = translate.removeprefix("0")
+            
+            return (0, self.get_pygame_onevalue_size(translate))
+        elif translate.startswith("-0"):
+            translate = translate.removeprefix("-0")
+            
+            return (0, self.get_pygame_onevalue_size(translate))
+
         num: str = ""
 
         is_unit: bool = False

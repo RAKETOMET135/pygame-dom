@@ -24,7 +24,7 @@
             "filename": "page.html",
             "header_color": "orange",
             "code": [
-                "<span class='keyw'>&lt;h1&gt;</span><span class='text'>Score {score}</span><span class='keyw'>&lt;/h1&gt;</span>"
+                "<span class='keyw'>&lt;h1&gt;</span><span class='text'>Score: {score}</span><span class='keyw'>&lt;/h1&gt;</span>"
             ]
         },
         {
