@@ -493,6 +493,10 @@ class StyleSheet:
                 style["overflow-x"] = self.get_pygame_overflow(style_rule.value)
             case "overflow-y":
                 style["overflow-y"] = self.get_pygame_overflow(style_rule.value)
+            case "border-color":
+                style["border-color"] = self.get_pygame_color(style_rule.value)
+            case "border-width":
+                style["border-width"] = self.get_pygame_onevalue_size(style_rule.value)
 
     def get_style(self, _type: str, classes: list[str], _id: str, modifiers: dict) -> dict:
         cached_style: dict | None = get_style(_type, classes, _id, modifiers)
@@ -657,6 +661,33 @@ class StyleSheet:
             return float(unit_string[:len(unit_string) - 1]) * 1_000
 
         return 0
+
+    def get_pygame_border(self, border: str) -> tuple[tuple, int]:
+        if len(border) <= 0:
+            return ((0, 0, 0, 0), 0)
+        
+        number: str = ""
+        color: int = ""
+
+        is_number: bool = False
+
+        if border[0].isdigit():
+            is_number = True
+
+            for letter in border:
+                if letter.isalpha() and is_number and not number.endswith("px"):
+                    number += "px"
+
+                    continue
+                elif letter.isalpha() and is_number:
+                    is_number = False
+
+                    return
+
+                if is_number:
+                    number += letter
+                else:
+                    color += letter
 
     def get_pygame_overflow(self, overflow: str) -> str:
         if overflow == "visible" or overflow == "hidden":

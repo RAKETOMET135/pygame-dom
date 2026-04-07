@@ -238,6 +238,30 @@
             "text": "<span class='val'>overflow-y</span>"
         },
         {
+            "type": "subsubheader",
+            "text": "Border color"
+        },
+        {
+            "type": "text",
+            "text": "You can use this property to set the element's border color. Color supports <span class='param'>CSS color names</span>, <span class='param'>rgb</span>, <span class='param'>rgba</span> and <span class='param'>hex</span>."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>border-color</span>"
+        },
+        {
+            "type": "subsubheader",
+            "text": "Border width"
+        },
+        {
+            "type": "text",
+            "text": "You can use this property to change the element's border width. This property supports only pixels (<span class='param'>px</span>)."
+        },
+        {
+            "type": "text-margin",
+            "text": "<span class='val'>border-width</span>"
+        },
+        {
             "type": "subheader",
             "text": "Spacing"
         },

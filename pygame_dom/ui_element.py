@@ -23,6 +23,7 @@ class UIElement:
         self.display = Display.BLOCK
         self.display_string = "block"
         self.position = "static"
+        self.border_width = 0
         self.rendered_x = 0
         self.rendered_y = 0
         self.rendered_size_x = 0
@@ -919,6 +920,8 @@ class UIElement:
 
         style: dict = self.element.set_style(ui_render_object, self.classes, self.id, self.type, { "hover": self.is_hover, "active": self.is_active, "focus": is_focused })
         self.position = style.get("position", "static")
+        self.border_width = style.get("border-width", 0)
+        border_color: tuple = style.get("border-color", None)
 
         text_align: str = style.get("text-align", "left")
 
@@ -988,6 +991,10 @@ class UIElement:
             if element_height < 20:
                 element_height = 20
 
+        # Make border change thw size too
+        element_width += self.border_width * 2
+        element_height += self.border_width * 2
+
         # Update elements using flex data
         flex_vertical_stretch: bool = children_data.get("vertical_stretch", False)
 
@@ -1021,7 +1028,12 @@ class UIElement:
             children_data["render_x"] += element_width
 
         # Update data for sub element rendering
-        outer_position: tuple[int, int, int, int] = (position_x, position_y, self.actual_size_x, self.actual_size_y)
+        outer_position: tuple[int, int, int, int] = (
+            position_x + self.border_width,
+            position_y + self.border_width,
+            self.actual_size_x - self.border_width * 2,
+            self.actual_size_y - self.border_width * 2
+        )
 
         self.rendered_x = position_x
         self.rendered_y = position_y
@@ -1031,11 +1043,13 @@ class UIElement:
         self.actual_size_y = int((element_height) * scale) + int(pad_vertical * scale)
         self.margin_size_x = self.actual_size_x + int(mar_horizontal * scale)
         self.margin_size_y = self.actual_size_y + int(mar_vertical * scale)
+        self.rendered_size_x -= self.border_width * 2
+        self.rendered_size_y -= self.border_width * 2
 
-        self.ui_render_object_stamp.render_x = position_x + padding[3] * (scale / parent_scale)
-        self.ui_render_object_stamp.render_y = position_y + padding[0] * (scale / parent_scale)
-        self.ui_render_object_stamp.width = self.actual_size_x
-        self.ui_render_object_stamp.height = self.actual_size_y
+        self.ui_render_object_stamp.render_x = position_x + padding[3] * (scale / parent_scale) + self.border_width
+        self.ui_render_object_stamp.render_y = position_y + padding[0] * (scale / parent_scale) + self.border_width
+        self.ui_render_object_stamp.width = self.actual_size_x - self.border_width * 2
+        self.ui_render_object_stamp.height = self.actual_size_y - self.border_width * 2
         self.ui_render_object_stamp.pad_horizontal = pad_horizontal
         self.ui_render_object_stamp.pad_vertical = pad_vertical
         self.ui_render_object_stamp.def_render_x = self.ui_render_object_stamp.render_x
@@ -1056,10 +1070,10 @@ class UIElement:
         # Render background for element
         if bg and render_background:
             rect: tuple[int, int, int, int] = (
-                int(position_x),
-                int(position_y),
-                self.actual_size_x,
-                self.actual_size_y
+                int(position_x) + self.border_width,
+                int(position_y) + self.border_width,
+                self.actual_size_x - self.border_width * 2,
+                self.actual_size_y - self.border_width * 2
             )
 
             color: tuple = tuple(int(c) for c in style.get("background-color", (0, 0, 0, 0)))
@@ -1080,6 +1094,23 @@ class UIElement:
                     border_bottom_right_radius=int(border_radius[3])
                 )
 
+                if self.border_width > 0 and border_color:
+                    pygame.draw.rect(
+                        local_overflow_surface,
+                        border_color,
+                        (
+                            rect[0] - self.border_width - ui_render_object.overflow_surface_x,
+                            rect[1] - self.border_width - ui_render_object.overflow_surface_y,
+                            rect[2] + 2 * self.border_width,
+                            rect[3] + 2 * self.border_width
+                        ),
+                        border_top_left_radius=border_radius[0] + self.border_width, 
+                        border_top_right_radius=border_radius[1] + self.border_width,
+                        border_bottom_left_radius=border_radius[2] + self.border_width,
+                        border_bottom_right_radius=border_radius[3] + self.border_width,
+                        width=self.border_width
+                    )
+
                 screen.blit(local_overflow_surface, (ui_render_object.overflow_surface_x, ui_render_object.overflow_surface_y))
             else:
                 pygame.draw.rect(
@@ -1092,16 +1123,22 @@ class UIElement:
                     border_bottom_right_radius=int(border_radius[3])
                 )
 
-            #pygame.draw.rect(
-            #    screen,
-            #    (0, 0, 0, 0),
-            #    rect,
-            #    border_top_left_radius=border_radius[0], 
-            #    border_top_right_radius=border_radius[1],
-            #    border_bottom_left_radius=border_radius[2],
-            #    border_bottom_right_radius=border_radius[3],
-            #    width=0
-            #)
+                if self.border_width > 0 and border_color:
+                    pygame.draw.rect(
+                        screen,
+                        border_color,
+                        (
+                            rect[0] - self.border_width,
+                            rect[1] - self.border_width,
+                            rect[2] + 2 * self.border_width,
+                            rect[3] + 2 * self.border_width
+                        ),
+                        border_top_left_radius=border_radius[0] + self.border_width, 
+                        border_top_right_radius=border_radius[1] + self.border_width,
+                        border_bottom_left_radius=border_radius[2] + self.border_width,
+                        border_bottom_right_radius=border_radius[3] + self.border_width,
+                        width=self.border_width
+                    )
 
         if hasattr(self.element, "modern_text") and len(self.element.modern_text) > 0:
             pass
