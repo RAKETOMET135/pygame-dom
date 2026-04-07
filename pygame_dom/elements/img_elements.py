@@ -144,21 +144,21 @@ class ImageElement:
         self.rect.y = outerPosition[1] + round((outerPosition[3] - self.rect.height) / 2)
 
         if ui_render_object.overflow_surface:
-            local_overflow_surface: pygame.Surface = pygame.Surface(ui_render_object.overflow_surface, pygame.SRCALPHA)
+            local_overflow_surface: pygame.Surface = pygame.Surface((int(ui_render_object.overflow_surface[0]), int(ui_render_object.overflow_surface[1])), pygame.SRCALPHA)
 
             local_overflow_surface.blit(
                 self.surface,
                 (
-                    self.rect[0] - ui_render_object.overflow_surface_x,
-                    self.rect[1] - ui_render_object.overflow_surface_y,
-                    self.rect[2],
-                    self.rect[3]
+                    int(self.rect[0] - ui_render_object.overflow_surface_x),
+                    int(self.rect[1] - ui_render_object.overflow_surface_y),
+                    int(self.rect[2]),
+                    int(self.rect[3])
                 )
             )
 
-            screen.blit(local_overflow_surface, (ui_render_object.overflow_surface_x, ui_render_object.overflow_surface_y))
+            screen.blit(local_overflow_surface, (int(ui_render_object.overflow_surface_x), int(ui_render_object.overflow_surface_y)))
         else:
-            screen.blit(self.surface, self.rect)
+            screen.blit(self.surface, (int(self.rect.x), int(self.rect.y), int(self.rect.width), int(self.rect.height)))
 
 class IMG(ImageElement):
     def __init__(self, path: str) -> IMG:
