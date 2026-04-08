@@ -12,7 +12,9 @@ from pygame_dom.cache.cache import get_image
 import pygame
 
 class UIPage:
-    def __init__(self, html_file_path: str) -> UIPage:
+    def __init__(self, html_file_path: str, page_id: int) -> UIPage:
+        self.page_id = page_id
+
         is_file_loaded: bool = False
         file_html: str = ""
 
@@ -71,7 +73,7 @@ class UIPage:
 
             return
 
-        self.style_sheet = StyleSheet(css_file_path, self.state_parser)
+        self.style_sheet = StyleSheet(css_file_path, self.state_parser, self)
         self.ui_render_object.style_sheet = self.style_sheet
 
     def rebuild(self) -> None:
@@ -331,7 +333,7 @@ class UIPage:
         """
 
         if not self.style_sheet:
-            self.style_sheet = StyleSheet("-/-te-/-", self.state_parser)
+            self.style_sheet = StyleSheet("-/-te-/-", self.state_parser, self)
             self.ui_render_object.style_sheet = self.style_sheet
 
         self.ui_render_object.reset()

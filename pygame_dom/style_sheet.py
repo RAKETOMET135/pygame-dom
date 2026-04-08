@@ -32,7 +32,7 @@ class IdStyle:
         self.style_rules = style_rules
 
 class StyleSheet:
-    def __init__(self, css_file_path: str, state_parser: Any) -> StyleSheet:
+    def __init__(self, css_file_path: str, state_parser: Any, page: Any) -> StyleSheet:
         self.default_style = []
         self.global_style = []
         self.tag_styles = []
@@ -40,6 +40,7 @@ class StyleSheet:
         self.id_styles = []
 
         self.state_parser = state_parser
+        self.page = page
 
         is_file_loaded: bool = False
         css_content: str = ""
@@ -503,7 +504,7 @@ class StyleSheet:
                 style["outline-width"] = self.get_pygame_onevalue_size(style_rule.value)
 
     def get_style(self, _type: str, classes: list[str], _id: str, modifiers: dict) -> dict:
-        cached_style: dict | None = get_style(_type, classes, _id, modifiers)
+        cached_style: dict | None = get_style(_type, classes, _id, modifiers, self.page)
 
         if cached_style:
             return cached_style
@@ -641,7 +642,7 @@ class StyleSheet:
 
                 break
 
-        add_style(_type, classes, _id, modifiers, copy.deepcopy(style))
+        add_style(_type, classes, _id, modifiers, copy.deepcopy(style), self.page)
 
         return style
 

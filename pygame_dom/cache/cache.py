@@ -1,3 +1,4 @@
+from typing import Any
 import pygame
 import copy
 
@@ -31,15 +32,29 @@ def get_image(path: str, width: int, height: int) -> pygame.Surface | None:
     
     return cache_images[key]
 
-def get_style(_type: str, classes: list[str], _id: str, modifiers: dict) -> dict | None:
-    key: tuple[str, str, str, str] = (_type, str(classes), _id, str(modifiers))
+def get_style(_type: str, classes: list[str], _id: str, modifiers: dict, page: Any) -> dict | None:
+    style_key: tuple[str, str, str, str] = (_type, str(classes), _id, str(modifiers))
+    page_key: str = str(page.page_id)
 
-    if not key in cache_styles:
+    if not page_key in cache_styles:
+        cache_styles[page_key] = {}
+
+        return None
+
+    page_styles: dict = cache_styles[page_key]
+
+    if not style_key in page_styles:
         return None
     
-    return copy.deepcopy(cache_styles[key])
+    return copy.deepcopy(page_styles[style_key])
 
-def add_style(_type: str, classes: list[str], _id: str, modifiers: dict, style: dict) -> None:
-    key: tuple[str, str, str, str] = (_type, str(classes), _id, str(modifiers))
+def add_style(_type: str, classes: list[str], _id: str, modifiers: dict, style: dict, page: Any) -> None:
+    style_key: tuple[str, str, str, str] = (_type, str(classes), _id, str(modifiers))
+    page_key: str = str(page.page_id)
 
-    cache_styles[key] = style
+    if not page_key in cache_styles:
+        cache_styles[page_key] = {}
+
+    page_styles: dict = cache_styles[page_key]
+
+    page_styles[style_key] = style

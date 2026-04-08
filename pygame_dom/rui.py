@@ -13,6 +13,8 @@ def setup() -> None:
     pygame.scrap.init()
 
 class RUI:
+    __created_page_id: int = 0
+
     def __init__(self) -> RUI:
         pass
     
@@ -59,7 +61,11 @@ class RUI:
             UIPage: UIPage that can be drawn to the screen using UIPage.draw()
         """
 
-        return UIPage(html_file_path)
+        ui_page: UIPage = UIPage(html_file_path, RUI.__created_page_id)
+
+        RUI.__created_page_id += 1
+
+        return ui_page
     
     @staticmethod
     def get_system_available_fonts() -> list[str]:
