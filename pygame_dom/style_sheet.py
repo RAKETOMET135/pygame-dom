@@ -1034,6 +1034,9 @@ class StyleSheet:
         return (0, 0, 0, 0)
 
     def get_pygame_onevalue_size(self, size: str) -> int:
+        if size == "none":
+            return 0
+        
         if size == "0":
             return 0
 
