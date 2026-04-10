@@ -9,6 +9,8 @@ class CSSTokenType(Enum):
     RBRACE = auto()
     COLON = auto()
     SEMICOLON = auto()
+    KEYFRAME = auto()
+    ANIMATION_NAME = auto()
 
 class CSSToken:
     def __init__(self, token_type: CSSTokenType, token_value: str) -> CSSToken:

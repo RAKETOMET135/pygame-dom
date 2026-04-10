@@ -1,5 +1,5 @@
 button {
-    color: rgb(0, 25, 152);
+    color: #fff rgb(0, 255, 0) rgba(85, 52, 68, 0.8) #f2f520;
     background-color: {"green" if currency > 10 else "red"};
 }
 
@@ -10,4 +10,34 @@ h1 {
 }
 */* {
     color: lawngreen;
+    width: 10.75200555px;
+    font-family: "Roboto";
+    font-family: url("roboto.ttf");
+    background-image: var(--root-image);
+}
+
+/*
+rgb(0, 0, 0) rgba(0, 0, 0), url(""), var(""), 10px
+*/
+
+@keyframes animation {
+    0% {
+        color: white green blue yellow;
+        width: 10px 50px
+    }
+    75% {
+        background-color: #f2f520;
+    }
+    100% {
+        height: 10px;
+    }
+}
+
+@keyframes animation2 {
+    from {
+        color: wheat
+    }
+    to {
+        color: aquamarine;
+    }
 }

@@ -18,6 +18,7 @@ def tokenize_file_content(file_content: str) -> tuple[CSSToken]:
     indent: int = 0
 
     is_comment: bool = False
+    is_keyframes: bool = False
 
     def create_token(token_type: CSSTokenType = CSSTokenType.NAME) -> None:
         nonlocal current_token, tokens
@@ -31,10 +32,15 @@ def tokenize_file_content(file_content: str) -> tuple[CSSToken]:
         current_token = ""
 
     def handle_lbrace() -> None:
-        nonlocal current_token, indent
+        nonlocal current_token, indent, is_keyframes
 
         if indent == 0:
-            create_token(CSSTokenType.NAME)
+            if current_token.startswith("@"):
+                is_keyframes = True
+
+                create_token(CSSTokenType.ANIMATION_NAME)
+            else:
+                create_token(CSSTokenType.NAME)
         
             current_token = "{"
             create_token(CSSTokenType.LBRACE)
@@ -42,7 +48,12 @@ def tokenize_file_content(file_content: str) -> tuple[CSSToken]:
         indent += 1
 
     def handle_colon() -> None:
-        nonlocal current_token
+        nonlocal current_token, indent
+
+        if indent == 0:
+            current_token += ":"
+
+            return
 
         create_token(CSSTokenType.PROPERTY)
 
@@ -80,8 +91,74 @@ def tokenize_file_content(file_content: str) -> tuple[CSSToken]:
         elif char_index < len(file_content) - 1 and file_content[char_index + 1] == "*":
             is_comment = True
 
+    def handle_keyframes_lbrace() -> None:
+        nonlocal current_token, indent
+
+        if indent == 1:
+            create_token(CSSTokenType.KEYFRAME)
+
+            current_token = "{"
+
+            create_token(CSSTokenType.LBRACE)
+        
+        indent += 1
+
+    def handle_keyframes_colon() -> None:
+        nonlocal current_token, indent
+
+        create_token(CSSTokenType.PROPERTY)
+
+        current_token = ":"
+        create_token(CSSTokenType.COLON)
+
+    def handle_keyframes_semicolon() -> None:
+        nonlocal current_token
+
+        create_token(CSSTokenType.VALUE)
+
+        current_token = ";"
+        create_token(CSSTokenType.SEMICOLON)
+    
+    def handle_keyframes_rbrace() -> None:
+        nonlocal current_token, indent, is_keyframes
+
+        indent -= 1
+
+        if indent == 2:
+            current_token = "{" + current_token[1:] + "}"
+
+            create_token(CSSTokenType.VALUE)
+        elif indent == 1:
+            create_token(CSSTokenType.VALUE)
+
+            current_token = "}"
+            create_token(CSSTokenType.RBRACE)
+        elif indent == 0:
+            current_token = "}"
+
+            create_token(CSSTokenType.RBRACE)
+
+            is_keyframes = False
+
     for i, char in enumerate(file_content):
         if is_comment and not char == "/":
+            continue
+
+        if is_keyframes:
+            match char:
+                case "{":
+                    handle_keyframes_lbrace()
+                case ":":
+                    handle_keyframes_colon()
+                case ";":
+                    handle_keyframes_semicolon()
+                case "}":
+                    handle_keyframes_rbrace()
+                case "/":
+                    handle_slash()
+                case _:
+                    current_token += char
+
             continue
 
         match char:
