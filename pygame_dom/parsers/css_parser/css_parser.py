@@ -76,7 +76,14 @@ def parse_group_properties(group: dict) -> dict:
                     if current_property:
                         raise CSSParserError(f"Expected '}}' before animation keyframe '{property_token.token_value}'.")
 
-                    create_property(property_token.token_value)
+                    if property_token.token_value == "from":
+                        create_property("0%")
+                    elif property_token.token_value == "to":
+                        create_property("100%")
+                    else:
+                        create_property(property_token.token_value)
+
+                    parsed_properties[current_property].append("@")
                 case CSSTokenType.LBRACE:
                     if not current_property:
                         raise CSSParserError(f"Unexpected token: {{")
@@ -85,7 +92,6 @@ def parse_group_properties(group: dict) -> dict:
                         raise CSSParserError(f"Expected property type before ':'.")
                     
                     parsed_properties[current_property].append(property_token.token_value)
-                    parsed_properties[current_property].append(":")
                 case CSSTokenType.COLON:
                     if not current_property:
                         raise CSSParserError(f"Expected property type before ':'.")
@@ -97,8 +103,6 @@ def parse_group_properties(group: dict) -> dict:
                 case CSSTokenType.SEMICOLON:
                     if not current_property:
                         raise CSSParserError(f"Unexpected token: ';'")
-
-                    parsed_properties[current_property].append(";")
                 case CSSTokenType.RBRACE:
                     current_property = None
                 

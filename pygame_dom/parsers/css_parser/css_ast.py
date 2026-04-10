@@ -9,6 +9,7 @@ class ASTValueType(Enum):
     VAR = auto()
     URL = auto()
     EXPR = auto()
+    KEYFRAME = auto()
     
     GROUP = auto()
 

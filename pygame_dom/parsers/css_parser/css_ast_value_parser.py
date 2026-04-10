@@ -1,9 +1,52 @@
 from pygame_dom.parsers.css_parser.css_ast_value_types import *
-from pygame_dom.parsers.css_parser.css_ast import ASTValueType, ASTValueInstance, ASTValue
+from pygame_dom.parsers.css_parser.css_ast import ASTValueType, ASTValueInstance, ASTValue, ASTProperty
 from pygame_dom.parsers.css_parser.css_data import *
 from pygame_dom.parsers.css_parser.css_parser_errors import CSSParserError
 
-def get_parsed_ast_value(value: str) -> tuple[ASTValueType, ASTValueInstance]:
+def get_parsed_ast_value(value: str | list[str]) -> tuple[ASTValueType, ASTValueInstance]:
+    if isinstance(value, list):
+        return get_parsed_list_value(value)
+
+    return get_parsed_string_value(value)
+
+def get_parsed_list_value(value: list[str]) -> tuple[ASTValueType, ASTValueInstance]:
+    if len(value) == 0:
+        raise CSSParserError(f"Can not create empty animation.")
+    
+    if not value[0] == "@":
+        return ASTValueType.NAME, Name("empty")
+
+    value.pop(0)
+
+    ast_properties: list[ASTProperty] = []
+
+    for i in range(len(value)):
+        if i % 2 == 1 and not i == 0:
+            continue
+
+        property_name: str = value[i]
+
+        if i + 1 >= len(value):
+            raise CSSParserError(f"Animation can not have an empty property: {property_name}")
+        
+        property_value: str = value[i + 1]
+
+        ast_value_type: ASTValueType
+        ast_value_instance: ASTValueInstance
+
+        ast_value_type, ast_value_instance = get_parsed_string_value(property_value)
+
+        ast_value: ASTValue = ASTValue(ast_value_type, ast_value_instance)
+
+        ast_property: ASTProperty = ASTProperty(property_name, ast_value)
+
+        ast_properties.append(ast_property)
+
+    ast_keyframe: AnimationKeyframe = AnimationKeyframe(ast_properties)
+
+    return ASTValueType.KEYFRAME, ast_keyframe
+
+def get_parsed_string_value(value: str) -> tuple[ASTValueType, ASTValueInstance]:
     separated_values: list[str] = separate_values(value)
 
     parsed_values: list[tuple[ASTValueType, ASTValueInstance]] = []

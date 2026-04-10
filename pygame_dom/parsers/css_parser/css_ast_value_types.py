@@ -1,5 +1,5 @@
 from __future__ import annotations
-from pygame_dom.parsers.css_parser.css_ast import ASTValueInstance, ASTValue
+from pygame_dom.parsers.css_parser.css_ast import ASTValueInstance, ASTValue, ASTProperty
 
 class Color(ASTValueInstance):
     def __init__(self, r: float, g: float, b: float, a: float = 255.0) -> Color:
@@ -97,5 +97,15 @@ class Group(ASTValueInstance):
 
         return output + "]"
     
+    def __repr__(self) -> str:
+        return self.__str__()
+
+class AnimationKeyframe(ASTValueInstance):
+    def __init__(self, content: list[ASTProperty]) -> AnimationKeyframe:
+        self.content = content
+    
+    def __str__(self) -> str:
+        return f"AnimationKeyframe: {self.content}"
+
     def __repr__(self) -> str:
         return self.__str__()
