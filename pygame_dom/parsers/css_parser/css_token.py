@@ -36,7 +36,7 @@ class CSSToken:
     def _fix_value_spaces_right(self) -> None:
         index: int = len(self.token_value) - 1
 
-        while index > 0:
+        while index >= 0:
             char: str = self.token_value[index]
 
             if char == " ":

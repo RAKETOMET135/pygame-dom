@@ -1,9 +1,13 @@
 button {
-    color: white;
+    color: rgb(0, 25, 152);
     background-color: {"green" if currency > 10 else "red"};
 }
 
+/*
 h1 {
     font-size: 50px;
     font-family: var("roboto.ttf");
+}
+*/* {
+    color: lawngreen;
 }

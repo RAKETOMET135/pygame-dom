@@ -1,8 +1,6 @@
 from typing import Final
 from pygame_dom.parsers.css_parser.css_token import CSSToken, CSSTokenType
-
-class TokenizerError(Exception):
-    pass
+from pygame_dom.parsers.css_parser.css_parser_errors import CSSTokenizerError
 
 def get_tokens_from_file(file_path: str) -> tuple[CSSToken]:
     file_content: str = open_css_file(file_path)
@@ -19,10 +17,12 @@ def tokenize_file_content(file_content: str) -> tuple[CSSToken]:
     current_token: str = ""
     indent: int = 0
 
+    is_comment: bool = False
+
     def create_token(token_type: CSSTokenType = CSSTokenType.NAME) -> None:
         nonlocal current_token, tokens
 
-        if len(current_token) <= 0:
+        if len(current_token) <= 0 or current_token.isspace():
             return
         
         token: CSSToken = CSSToken(token_type, current_token)
@@ -72,7 +72,18 @@ def tokenize_file_content(file_content: str) -> tuple[CSSToken]:
             current_token = "}"
             create_token(CSSTokenType.RBRACE)
 
-    for char in file_content:
+    def handle_slash(char_index: int) -> None:
+        nonlocal is_comment
+
+        if char_index > 0 and file_content[char_index - 1] == "*":
+            is_comment = False
+        elif char_index < len(file_content) - 1 and file_content[char_index + 1] == "*":
+            is_comment = True
+
+    for i, char in enumerate(file_content):
+        if is_comment and not char == "/":
+            continue
+
         match char:
             case "{":
                 handle_lbrace()
@@ -82,6 +93,8 @@ def tokenize_file_content(file_content: str) -> tuple[CSSToken]:
                 handle_semicolon()
             case "}":
                 handle_rbrace()
+            case "/":
+                handle_slash(i)
             case _:
                 current_token += char
     
@@ -89,7 +102,7 @@ def tokenize_file_content(file_content: str) -> tuple[CSSToken]:
 
 def open_css_file(file_path: str) -> str:
     if not file_path.endswith(".css"):
-        raise TokenizerError(f"File on provided path {file_path} is not a CSS file.")
+        raise CSSTokenizerError(f"File on provided path {file_path} is not a CSS file.")
 
     try:
         with open(file_path, "r", encoding="utf-8") as file:
@@ -97,15 +110,15 @@ def open_css_file(file_path: str) -> str:
 
             return file_content
     except FileNotFoundError:
-        raise TokenizerError(f"File on path {file_path} does not exist.")
+        raise CSSTokenizerError(f"File on path {file_path} does not exist.")
     except PermissionError:
-        raise TokenizerError(f"File on path {file_path} is not accessable.")
+        raise CSSTokenizerError(f"File on path {file_path} is not accessable.")
     except IsADirectoryError:
-        raise TokenizerError(f"File on path {file_path} is a directory.")
+        raise CSSTokenizerError(f"File on path {file_path} is a directory.")
     except UnicodeDecodeError:
-        raise TokenizerError(f"File on path {file_path} does not have correct encoding, only UTF-8 is supported.")
+        raise CSSTokenizerError(f"File on path {file_path} does not have correct encoding, only UTF-8 is supported.")
     except OSError as e:
-        raise TokenizerError(f"OS error while reading file on path '{file_path}'.") from e
+        raise CSSTokenizerError(f"OS error while reading file on path '{file_path}'.") from e
 
 # TESTS
 if __name__ == "__main__":

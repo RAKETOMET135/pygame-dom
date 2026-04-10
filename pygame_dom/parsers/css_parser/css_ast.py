@@ -8,11 +8,15 @@ class ASTValueType(Enum):
     NAME = auto()
     VAR = auto()
     URL = auto()
+    EXPR = auto()
     
     GROUP = auto()
 
+class ASTValueInstance:
+    pass
+
 class ASTValue:
-    def __init__(self, datatype: str, value: Any) -> ASTValue:
+    def __init__(self, datatype: ASTValueType, value: ASTValueInstance) -> ASTValue:
         self.datatype = datatype
         self.value = value
 

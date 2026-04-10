@@ -1,18 +1,23 @@
-from pygame_dom.parsers.css_parser.css_ast import ASTValue, ASTProperty, ASTRule, ASTStyleSheet, ASTValueType
+from pygame_dom.parsers.css_parser.css_ast import ASTValue, ASTProperty, ASTRule, ASTStyleSheet, ASTValueType, ASTValueInstance
 from pygame_dom.parsers.css_parser.css_tokenizer import CSSToken, CSSTokenType
-from typing import Any
-
-class ParserError(Exception):
-    pass
+from pygame_dom.parsers.css_parser.css_ast_value_parser import get_parsed_ast_value
+from pygame_dom.parsers.css_parser.css_parser_errors import CSSParserError
 
 def parse_css_tokens(tokens: tuple[CSSToken]) -> ASTStyleSheet:
     selector_groups: list[dict] = create_selector_groups(tokens)
     selector_groups = create_properties(selector_groups)
 
-    print(selector_groups)
+    ast: ASTStyleSheet = create_ast(selector_groups)
+
+    return ast
 
 def create_ast_value(value: str) -> ASTValue:
-    pass
+    ast_value_type: ASTValueType
+    ast_value_instance: ASTValueInstance
+
+    ast_value_type, ast_value_instance = get_parsed_ast_value(value)
+
+    return ASTValue(ast_value_type, ast_value_instance)
 
 def create_ast_property(property: str, value: str) -> ASTProperty:
     ast_value: ASTValue = create_ast_value(value)
@@ -60,20 +65,20 @@ def parse_group_properties(group: dict) -> dict:
         match token_type:
             case CSSTokenType.PROPERTY:
                 if current_property:
-                    raise ParserError(f"Expected ';' after property '{property_token.token_value}' value.")
+                    raise CSSParserError(f"Expected ';' after property '{property_token.token_value}' value.")
                 
                 create_property(property_token.token_value)
             case CSSTokenType.COLON:
                 if not current_property:
-                    raise ParserError(f"Expected property type before ':'.")
+                    raise CSSParserError(f"Expected property type before ':'.")
             case CSSTokenType.VALUE:
                 if not current_property:
-                    raise ParserError(f"Expected property type before property value '{property_token.token_value}'.")
+                    raise CSSParserError(f"Expected property type before property value '{property_token.token_value}'.")
                 
                 parsed_properties[current_property] = property_token.token_value
             case CSSTokenType.SEMICOLON:
                 if not current_property:
-                    raise ParserError(f"Unexpected token: ';'")
+                    raise CSSParserError(f"Unexpected token: ';'")
                 
                 current_property = None
     
@@ -134,20 +139,20 @@ def create_selector_groups(tokens: tuple[CSSToken]) -> list[dict]:
                 if current_selector_group:
                     selector: str = current_selector_group["selector"]
 
-                    raise ParserError(f"Missing '}}' for selector '{selector}'.")
+                    raise CSSParserError(f"Missing '}}' for selector '{selector}'.")
 
                 new_selector_group(token.token_value)
             case CSSTokenType.LBRACE:
                 if not current_selector_group:
-                    raise ParserError(f"Expected selector before '{{'.")
+                    raise CSSParserError(f"Expected selector before '{{'.")
             case CSSTokenType.RBRACE:
                 if not current_selector_group:
-                    raise ParserError(f"Unexpected token: '}}'")
+                    raise CSSParserError(f"Unexpected token: '}}'")
 
                 current_selector_group = None
             case _:
                 if not current_selector_group:
-                    raise ParserError(f"Can not write property '{token.token_value}' outside of a selector.")
+                    raise CSSParserError(f"Can not write property '{token.token_value}' outside of a selector.")
                 
                 current_selector_group["properties"].append(token)
     
